@@ -1,0 +1,16 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Mivlgu" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    </style>
+
+    <color name="all">#6da8c9</color>
+    <color name="even">#82c08f</color>
+    <color name="odd">#b9a078</color>
+
+    <color name="on_all">#1d2e35</color>
+    <color name="on_even">#202d1c</color>
+    <color name="on_odd">#232111</color>
+
+</resources>

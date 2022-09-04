@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расписание</string>
+    <string name="timetable">Расписание</string>
+
+    <string name="even">Чётные</string>
+    <string name="odd">Нечётные</string>
+
+    <string name="info">Информация</string>
+</resources>

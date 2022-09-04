@@ -1,0 +1,17 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Mivlgu" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <color name="all">#d9edf7</color>
+    <color name="even">#dff0d8</color>
+    <color name="odd">#fcf8e3</color>
+
+    <color name="on_all">#31708f</color>
+    <color name="on_even">#356036</color>
+    <color name="on_odd">#77613c</color>
+
+    <style name="Theme.Mivlgu" parent="Base.Theme.Mivlgu" />
+</resources>

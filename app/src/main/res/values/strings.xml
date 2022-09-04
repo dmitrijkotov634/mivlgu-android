@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Timetable</string>
+    <string name="timetable">Timetable</string>
+
+    <string name="fitr" translatable="false">ФИТР</string>
+    <string name="fem" translatable="false">ФЭМ</string>
+    <string name="msf" translatable="false">МСФ</string>
+    <string name="gf" translatable="false">ГФ</string>
+    <string name="spo" translatable="false">СПО</string>
+
+    <string name="even">Even</string>
+    <string name="odd">Odd</string>
+    <string name="info">Info</string>
+
+    <string name="about" translatable="false"><a href="https://t.me/wavecat">@wavecat</a></string>
+</resources>
