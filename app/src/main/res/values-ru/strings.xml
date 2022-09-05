@@ -7,4 +7,6 @@
     <string name="odd">Нечётные</string>
 
     <string name="info">Информация</string>
+
+    <string name="failed_loading">Не удалось загрузить страницу</string>
 </resources>

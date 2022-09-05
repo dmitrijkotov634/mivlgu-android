@@ -49,6 +49,18 @@ class GroupFragment : Fragment() {
             binding.progressBar.visibility = View.VISIBLE
         }
 
+        model.loadingError.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            LoadingErrorDialog().apply {
+                val bundle = Bundle()
+                bundle.putString(LoadingErrorDialog.EXCEPTION_ARG, it.message)
+                arguments = bundle
+            }.show(
+                childFragmentManager, LoadingErrorDialog.TAG
+            )
+            model.closeErrorDialog()
+        }
+
         model.currentGroupsList.observe(viewLifecycleOwner) { group ->
             binding.groups.adapter = GroupAdapter(group) {
                 model.selectGroup(group[it])

@@ -13,4 +13,6 @@
     <string name="info">Info</string>
 
     <string name="about" translatable="false"><a href="https://t.me/wavecat">@wavecat</a></string>
+
+    <string name="failed_loading">Failed to load page</string>
 </resources>

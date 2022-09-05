@@ -34,6 +34,18 @@ class TimetableFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        model.loadingError.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            LoadingErrorDialog().apply {
+                val bundle = Bundle()
+                bundle.putString(LoadingErrorDialog.EXCEPTION_ARG, it.message)
+                arguments = bundle
+            }.show(
+                childFragmentManager, LoadingErrorDialog.TAG
+            )
+            model.closeErrorDialog()
+        }
+
         model.currentTimetableInfo.observe(viewLifecycleOwner) { info ->
             if (info == null) return@observe
 

@@ -14,6 +14,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val currentFacultyIndex = MutableLiveData<Int>()
     val currentTimetableInfo = MutableLiveData<TimetableInfo?>()
+    val loadingError = MutableLiveData<Exception?>()
+
     val currentGroupsList: MutableLiveData<List<String>> by lazy {
         MutableLiveData<List<String>>().also {
             selectFaculty(repository.facultyIndex)
@@ -28,10 +30,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     fun selectFaculty(index: Int) {
-        currentFacultyIndex.postValue(index)
+        currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
-            val data = Parser.pickGroups(facultiesIds[index])
-            currentGroupsList.postValue(data)
+            try {
+                val data = Parser.pickGroups(facultiesIds[index])
+                currentGroupsList.postValue(data)
+            } catch (e: Exception) {
+                loadingError.postValue(e)
+            }
         }
     }
 
@@ -50,56 +56,66 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val list = mutableListOf<TimetableAdapter.TimetableItem>()
             val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
-            val data = Parser.pickTimetable(group)
+            try {
+                val data = Parser.pickTimetable(group)
 
-            if (week.indexOf(dayOfWeek) > data.size - 1)
-                isEven = !isEven
+                if (week.indexOf(dayOfWeek) > data.size - 1)
+                    isEven = !isEven
 
-            data.forEachIndexed { index, day ->
-                if (week[index] == dayOfWeek)
-                    dayIndex = filteredList.size
+                data.forEachIndexed { index, day ->
+                    if (week[index] == dayOfWeek)
+                        dayIndex = filteredList.size
 
-                val dayHeader = TimetableAdapter.DayHeader(day.title)
-                list.add(dayHeader)
-                filteredList.add(dayHeader)
+                    val dayHeader = TimetableAdapter.DayHeader(day.title)
+                    list.add(dayHeader)
+                    filteredList.add(dayHeader)
 
-                day.klasses.forEach { klass ->
-                    val klassHeader = TimetableAdapter.KlassHeader(klass.time, klass.number)
-                    list.add(klassHeader)
-                    filteredList.add(klassHeader)
+                    day.klasses.forEach { klass ->
+                        val klassHeader = TimetableAdapter.KlassHeader(klass.time, klass.number)
+                        list.add(klassHeader)
+                        filteredList.add(klassHeader)
 
-                    klass.weeks.forEach { week ->
-                        week.items.forEach {
-                            val item = TimetableAdapter.KlassItem.from(week.type, it)
-                            list.add(item)
+                        klass.weeks.forEach { week ->
+                            week.items.forEach {
+                                val item = TimetableAdapter.KlassItem.from(week.type, it)
+                                list.add(item)
 
-                            if ((isEven && week.type == Parser.WeekType.EVEN) ||
-                                (!isEven && week.type == Parser.WeekType.ODD) ||
-                                week.type == Parser.WeekType.ALL
-                            )
-                                filteredList.add(item)
+                                if ((isEven && week.type == Parser.WeekType.EVEN) ||
+                                    (!isEven && week.type == Parser.WeekType.ODD) ||
+                                    week.type == Parser.WeekType.ALL
+                                )
+                                    filteredList.add(item)
+                            }
                         }
                     }
                 }
-            }
 
-            val space = TimetableAdapter.DayHeader("\n")
-            filteredList.add(space)
-            list.add(space)
+                val space = TimetableAdapter.DayHeader("\n")
+                filteredList.add(space)
+                list.add(space)
 
-            currentTimetableInfo.postValue(
-                TimetableInfo(
-                    list,
-                    filteredList,
-                    isEven,
-                    dayIndex
+                currentTimetableInfo.postValue(
+                    TimetableInfo(
+                        list,
+                        filteredList,
+                        isEven,
+                        dayIndex
+                    )
                 )
-            )
+
+            } catch (e: Exception) {
+                loadingError.postValue(e)
+                return@launch
+            }
         }
     }
 
     fun deselect() {
-        currentTimetableInfo.postValue(null)
+        currentTimetableInfo.value = null
+    }
+
+    fun closeErrorDialog() {
+        loadingError.value = null
     }
 
     companion object {
