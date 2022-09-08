@@ -4,9 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.wavecat.mivlgu.adapter.TimetableAdapter
+import com.wavecat.mivlgu.adapters.TimetableAdapter
+import com.wavecat.mivlgu.models.WeekType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
 import java.util.*
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -14,7 +16,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val currentFacultyIndex = MutableLiveData<Int>()
     val currentTimetableInfo = MutableLiveData<TimetableInfo?>()
-    val loadingError = MutableLiveData<Exception?>()
+    val loadingException = MutableLiveData<Exception?>()
 
     val currentGroupsList: MutableLiveData<List<String>> by lazy {
         MutableLiveData<List<String>>().also {
@@ -29,19 +31,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentDayIndex: Int
     )
 
+    private fun pickGroups(facultyId: Int): List<String> {
+        val calendar = Calendar.getInstance()
+        return Jsoup
+            .connect("https://www.mivlgu.ru/out-inf/scala/groups.php")
+            .data(
+                "semester", "1",
+                "year", calendar.get(Calendar.YEAR).toString(),
+                "faculty", facultyId.toString(),
+                "group", ""
+            )
+            .execute()
+            .parse()
+            .getElementsByTag("a").map {
+                it.attr("data-group-name")
+            }
+    }
+
     fun selectFaculty(index: Int) {
         currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val data = Parser.pickGroups(facultiesIds[index])
+                val data = pickGroups(facultiesIds[index])
                 currentGroupsList.postValue(data)
             } catch (e: Exception) {
-                loadingError.postValue(e)
+                loadingException.postValue(e)
             }
         }
     }
 
-    fun selectGroup(group: String) {
+    fun selectGroup(group: String, names: Array<String>) {
         val calendar = Calendar.getInstance()
         calendar.firstDayOfWeek = Calendar.MONDAY
 
@@ -57,32 +76,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
             try {
-                val data = Parser.pickTimetable(group)
+                val data =
+                    Client().scheduleGetJson(group, "1", calendar.get(Calendar.YEAR).toString())
 
-                if (week.indexOf(dayOfWeek) > data.size - 1)
+                if (week.indexOf(dayOfWeek) > data.disciplines.size - 1)
                     isEven = !isEven
 
-                data.forEachIndexed { index, day ->
+                data.disciplines.forEach { day ->
+                    val index = day.key.toInt() - 1
+
                     if (week[index] == dayOfWeek)
                         dayIndex = filteredList.size
 
-                    val dayHeader = TimetableAdapter.DayHeader(day.title)
+                    val dayHeader = TimetableAdapter.DayHeader(names[index])
                     list.add(dayHeader)
                     filteredList.add(dayHeader)
 
-                    day.klasses.forEach { klass ->
-                        val klassHeader = TimetableAdapter.KlassHeader(klass.time, klass.number)
-                        list.add(klassHeader)
-                        filteredList.add(klassHeader)
+                    day.value.forEach { klass ->
+                        val paraHeader =
+                            TimetableAdapter.ParaHeader(klass.key.toInt() - 1)
 
-                        klass.weeks.forEach { week ->
-                            week.items.forEach {
-                                val item = TimetableAdapter.KlassItem.from(week.type, it)
+                        list.add(paraHeader)
+                        filteredList.add(paraHeader)
+
+                        klass.value.forEach { week ->
+                            week.value.forEach {
+                                val item = TimetableAdapter.ParaItem(it)
                                 list.add(item)
-
-                                if ((isEven && week.type == Parser.WeekType.EVEN) ||
-                                    (!isEven && week.type == Parser.WeekType.ODD) ||
-                                    week.type == Parser.WeekType.ALL
+                                if ((isEven && it.typeWeek == WeekType.EVEN) ||
+                                    (!isEven && it.typeWeek == WeekType.ODD) ||
+                                    it.typeWeek == WeekType.ALL
                                 )
                                     filteredList.add(item)
                             }
@@ -104,7 +127,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
 
             } catch (e: Exception) {
-                loadingError.postValue(e)
+                loadingException.postValue(e)
                 return@launch
             }
         }
@@ -115,12 +138,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun closeErrorDialog() {
-        loadingError.value = null
+        loadingException.value = null
     }
 
     companion object {
         val facultiesIds = listOf(2, 10, 4, 9, 16)
-
         val week = listOf(
             Calendar.MONDAY,
             Calendar.TUESDAY,

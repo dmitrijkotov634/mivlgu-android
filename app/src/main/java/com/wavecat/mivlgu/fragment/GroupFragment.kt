@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.chip.Chip
 import com.wavecat.mivlgu.MainViewModel
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.adapter.GroupAdapter
+import com.wavecat.mivlgu.adapters.GroupAdapter
 import com.wavecat.mivlgu.databinding.GroupFragmentBinding
 
 class GroupFragment : Fragment() {
@@ -49,21 +49,21 @@ class GroupFragment : Fragment() {
             binding.progressBar.visibility = View.VISIBLE
         }
 
-        model.loadingError.observe(viewLifecycleOwner) {
+        model.loadingException.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            LoadingErrorDialog().apply {
+            LoadingExceptionDialog().apply {
                 val bundle = Bundle()
-                bundle.putString(LoadingErrorDialog.EXCEPTION_ARG, it.message)
+                bundle.putString(LoadingExceptionDialog.EXCEPTION_ARG, it.message)
                 arguments = bundle
             }.show(
-                childFragmentManager, LoadingErrorDialog.TAG
+                childFragmentManager, LoadingExceptionDialog.TAG
             )
             model.closeErrorDialog()
         }
 
         model.currentGroupsList.observe(viewLifecycleOwner) { group ->
             binding.groups.adapter = GroupAdapter(group) {
-                model.selectGroup(group[it])
+                model.selectGroup(group[it], resources.getStringArray(R.array.days))
 
                 val builder = NavOptions.Builder()
                     .setEnterAnim(androidx.appcompat.R.anim.abc_fade_in)

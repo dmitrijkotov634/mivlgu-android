@@ -6,7 +6,7 @@ import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wavecat.mivlgu.R
 
-class LoadingErrorDialog : DialogFragment() {
+class LoadingExceptionDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.failed_loading))

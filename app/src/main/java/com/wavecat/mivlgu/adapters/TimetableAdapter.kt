@@ -1,4 +1,4 @@
-package com.wavecat.mivlgu.adapter
+package com.wavecat.mivlgu.adapters
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -6,11 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.wavecat.mivlgu.Parser
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.databinding.DayHeaderBinding
 import com.wavecat.mivlgu.databinding.ItemLayoutBinding
 import com.wavecat.mivlgu.databinding.KlassHeaderBinding
+import com.wavecat.mivlgu.models.Para
+import com.wavecat.mivlgu.models.WeekType
 
 
 class TimetableAdapter(
@@ -23,23 +24,11 @@ class TimetableAdapter(
 
     data class DayHeader(val title: String) : TimetableItem
 
-    data class KlassHeader(val time: String, val title: String) : TimetableItem
+    data class ParaHeader(val index: Int) : TimetableItem
 
-    data class KlassItem(
-        val weekType: Parser.WeekType,
-        val type: String,
-        val text: String,
-    ) : TimetableItem {
-        companion object {
-            fun from(weekType: Parser.WeekType, item: Parser.Item): KlassItem {
-                return KlassItem(
-                    weekType,
-                    item.type,
-                    "${item.disciplineName} ${item.numberWeek}${item.underGroup} ${item.name} ${item.aud}"
-                )
-            }
-        }
-    }
+    data class ParaItem(
+        val para: Para,
+    ) : TimetableItem
 
     class DayViewHolder(view: View) : ViewHolder(view) {
         var binding = DayHeaderBinding.bind(view)
@@ -56,8 +45,8 @@ class TimetableAdapter(
     override fun getItemViewType(position: Int): Int =
         when (items[position]) {
             is DayHeader -> DAY_HEADER
-            is KlassHeader -> KLASS_HEADER
-            is KlassItem -> ITEM_TYPE
+            is ParaHeader -> KLASS_HEADER
+            is ParaItem -> ITEM_TYPE
             else -> throw IllegalArgumentException()
         }
 
@@ -80,40 +69,47 @@ class TimetableAdapter(
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
+        val i = items[position]
 
         when (holder) {
             is DayViewHolder -> {
-                if (item is DayHeader) holder.binding.dayTitle.text = item.title
+                if (i is DayHeader) holder.binding.dayTitle.text = i.title
             }
 
             is KlassViewHolder -> {
-                if (item is KlassHeader) {
-                    holder.binding.klassTime.text = item.time.replace("-", " -")
-                    holder.binding.klassTitle.text = item.title
+                if (i is ParaHeader) {
+                    val resources = holder.binding.root.context.resources
+
+                    val time = resources.getStringArray(R.array.time)
+                    val klass = resources.getStringArray(R.array.klass)
+
+                    holder.binding.klassTime.text = time[i.index]
+                    holder.binding.klassTitle.text = klass[i.index]
                 }
             }
 
             is ItemViewHolder -> {
-                if (item is KlassItem) {
-                    holder.binding.itemTitle.text = item.text
-                    holder.binding.itemType.text = item.type
+                if (i is ParaItem) {
+                    holder.binding.itemTitle.text =
+                        "${i.para.discipline}${i.para.underGroup ?: (" " + i.para.numberWeek)} ${i.para.name} ${i.para.aud}"
+
+                    holder.binding.itemType.text = i.para.type
 
                     holder.binding.root.setBackgroundColor(
                         ContextCompat.getColor(
-                            holder.binding.root.context, when (item.weekType) {
-                                Parser.WeekType.ALL -> R.color.all
-                                Parser.WeekType.EVEN -> R.color.even
-                                Parser.WeekType.ODD -> R.color.odd
+                            holder.binding.root.context, when (i.para.typeWeek) {
+                                WeekType.ALL -> R.color.all
+                                WeekType.EVEN -> R.color.even
+                                WeekType.ODD -> R.color.odd
                             }
                         )
                     )
 
                     val onItemColor = ContextCompat.getColor(
-                        holder.binding.root.context, when (item.weekType) {
-                            Parser.WeekType.ALL -> R.color.on_all
-                            Parser.WeekType.EVEN -> R.color.on_even
-                            Parser.WeekType.ODD -> R.color.on_odd
+                        holder.binding.root.context, when (i.para.typeWeek) {
+                            WeekType.ALL -> R.color.on_all
+                            WeekType.EVEN -> R.color.on_even
+                            WeekType.ODD -> R.color.on_odd
                         }
                     )
 

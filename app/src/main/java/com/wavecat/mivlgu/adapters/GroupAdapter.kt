@@ -1,4 +1,4 @@
-package com.wavecat.mivlgu.adapter
+package com.wavecat.mivlgu.adapters
 
 import android.view.LayoutInflater
 import android.view.View

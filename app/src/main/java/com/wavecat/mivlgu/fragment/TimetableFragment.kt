@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.wavecat.mivlgu.MainViewModel
-import com.wavecat.mivlgu.Parser
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.adapter.TimetableAdapter
+import com.wavecat.mivlgu.adapters.TimetableAdapter
 import com.wavecat.mivlgu.databinding.TimetableFragmentBinding
+import com.wavecat.mivlgu.models.WeekType
 
 class TimetableFragment : Fragment() {
 
@@ -34,14 +34,14 @@ class TimetableFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        model.loadingError.observe(viewLifecycleOwner) {
+        model.loadingException.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            LoadingErrorDialog().apply {
+            LoadingExceptionDialog().apply {
                 val bundle = Bundle()
-                bundle.putString(LoadingErrorDialog.EXCEPTION_ARG, it.message)
+                bundle.putString(LoadingExceptionDialog.EXCEPTION_ARG, it.message)
                 arguments = bundle
             }.show(
-                childFragmentManager, LoadingErrorDialog.TAG
+                childFragmentManager, LoadingExceptionDialog.TAG
             )
             model.closeErrorDialog()
         }
@@ -62,10 +62,10 @@ class TimetableFragment : Fragment() {
                 val adapter = binding.timetable.adapter ?: return@setOnCheckedStateChangeListener
                 if (adapter is TimetableAdapter) {
                     adapter.items = info.timetable.filter {
-                        if (it is TimetableAdapter.KlassItem) {
-                            it.weekType == Parser.WeekType.ALL ||
-                                    (R.id.even in checkedIds && it.weekType == Parser.WeekType.EVEN) ||
-                                    (R.id.odd in checkedIds && it.weekType == Parser.WeekType.ODD) ||
+                        if (it is TimetableAdapter.ParaItem) {
+                            it.para.typeWeek == WeekType.ALL ||
+                                    (R.id.even in checkedIds && it.para.typeWeek == WeekType.EVEN) ||
+                                    (R.id.odd in checkedIds && it.para.typeWeek == WeekType.ODD) ||
                                     checkedIds.size == 0
                         } else
                             true

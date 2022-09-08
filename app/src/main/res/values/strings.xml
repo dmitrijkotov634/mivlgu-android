@@ -15,4 +15,32 @@
     <string name="about" translatable="false"><a href="https://t.me/wavecat">@wavecat</a></string>
 
     <string name="failed_loading">Failed to load page</string>
+
+    <string-array name="time" translatable="false">
+        <item>08.30 – 10.00</item>
+        <item>10.15 – 11.45</item>
+        <item>12.30 – 14.00</item>
+        <item>14.15 – 15.45</item>
+        <item>16.00 – 17.30</item>
+        <item>17.45 – 19.15</item>
+    </string-array>
+
+    <string-array name="days">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
+
+    <string-array name="klass">
+        <item>1 class</item>
+        <item>2 class</item>
+        <item>3 class</item>
+        <item>4 class</item>
+        <item>5 class</item>
+        <item>6 class</item>
+    </string-array>
 </resources>
