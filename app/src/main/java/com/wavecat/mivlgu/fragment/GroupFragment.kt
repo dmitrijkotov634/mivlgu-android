@@ -2,10 +2,13 @@ package com.wavecat.mivlgu.fragment
 
 import android.os.Bundle
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -14,6 +17,7 @@ import com.wavecat.mivlgu.MainViewModel
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.adapters.GroupAdapter
 import com.wavecat.mivlgu.databinding.GroupFragmentBinding
+
 
 class GroupFragment : Fragment() {
 
@@ -42,7 +46,6 @@ class GroupFragment : Fragment() {
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menu.clear()
 
                 if (_binding == null) return
 
@@ -75,7 +78,7 @@ class GroupFragment : Fragment() {
                     findNavController().navigateUp()
                 return true
             }
-        })
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         binding.chipGroup.setOnCheckedStateChangeListener { group, _ ->
             requireActivity().invalidateMenu()
@@ -99,6 +102,8 @@ class GroupFragment : Fragment() {
                 GridLayoutManager(context, if (group.second == null) 2 else 1)
 
             binding.groups.adapter = GroupAdapter(group.first) {
+                requireActivity().invalidateMenu()
+
                 if (group.second == null) model.selectGroup(
                     group.first[it],
                     resources.getStringArray(R.array.days)
@@ -110,6 +115,10 @@ class GroupFragment : Fragment() {
                     .setExitAnim(androidx.appcompat.R.anim.abc_fade_out)
 
                 findNavController().navigate(R.id.TimetableFragment, null, builder.build())
+
+                val imm: InputMethodManager? =
+                    getSystemService(requireContext(), InputMethodManager::class.java)
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
 
             binding.progressBar.visibility = View.INVISIBLE

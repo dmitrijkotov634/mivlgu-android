@@ -18,7 +18,6 @@
     <string name="failed_loading">Failed to load page</string>
     <string name="search">Search</string>
     <string name="teacher">Teacher</string>
-    <string name="author">Kotov Dmitry</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

@@ -23,7 +23,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         MutableLiveData<Pair<List<String>, List<Int>?>>().also {
             if (repository.facultyIndex != teacherIndex)
                 selectFaculty(repository.facultyIndex)
-            else if (repository.teacherFio != null)
+            else if (!repository.teacherFio.isNullOrEmpty())
                 selectTeacher(repository.teacherFio!!)
         }
     }
@@ -72,7 +72,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         currentFacultyIndex.value = teacherIndex
 
         if (fio.isNullOrEmpty()) {
-            currentGroupsList.value = listOf<String>() to null
+            currentGroupsList.value = listOf<String>() to listOf()
             return
         }
 
@@ -81,7 +81,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val data = pickTeachers(fio)
-                println(data)
                 currentGroupsList.postValue(data.keys.toList() to data.values.toList())
             } catch (e: Exception) {
                 loadingException.postValue(e)

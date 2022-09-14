@@ -12,7 +12,6 @@
 
     <string name="search">Поиск</string>
     <string name="teacher">Препод.</string>
-    <string name="author">Котов Дмитрий</string>
 
     <string-array name="days">
         <item>Понедельник</item>
