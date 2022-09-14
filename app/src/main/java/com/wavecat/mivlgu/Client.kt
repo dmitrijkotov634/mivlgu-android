@@ -23,4 +23,17 @@ class Client {
             parameter("year", year)
             parameter("format", "json")
         }.body()
+
+    suspend fun scheduleGetTeacherJson(
+        teacherId: Int,
+        semester: String,
+        year: String
+    ): ScheduleGetResult =
+        client.get {
+            url("https://scala.mivlgu.ru/core/frontend/index.php?r=schedulecash/teacher")
+            parameter("teacher_id", teacherId)
+            parameter("semester", semester)
+            parameter("year", year)
+            parameter("format", "json")
+        }.body()
 }

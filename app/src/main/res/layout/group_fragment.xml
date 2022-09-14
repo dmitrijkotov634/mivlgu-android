@@ -61,6 +61,14 @@
             android:text="@string/spo"
             android:textAlignment="center" />
 
+        <com.google.android.material.chip.Chip
+            android:id="@+id/teacher"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/teacher"
+            android:textAlignment="center" />
+
     </com.google.android.material.chip.ChipGroup>
 
     <androidx.recyclerview.widget.RecyclerView

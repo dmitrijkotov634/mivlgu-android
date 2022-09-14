@@ -10,6 +10,10 @@
 
     <string name="failed_loading">Не удалось загрузить страницу</string>
 
+    <string name="search">Поиск</string>
+    <string name="teacher">Препод.</string>
+    <string name="author">Котов Дмитрий</string>
+
     <string-array name="days">
         <item>Понедельник</item>
         <item>Вторник</item>
@@ -27,5 +31,6 @@
         <item>IV пара</item>
         <item>V пара</item>
         <item>VI пара</item>
+        <item>VII пара</item>
     </string-array>
 </resources>

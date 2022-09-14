@@ -91,7 +91,7 @@ class TimetableAdapter(
             is ItemViewHolder -> {
                 if (i is ParaItem) {
                     holder.binding.itemTitle.text =
-                        "${i.para.discipline}${i.para.underGroup ?: (" " + i.para.numberWeek)} ${i.para.name} ${i.para.aud}"
+                        "${i.para.discipline}${i.para.underGroup ?: (" " + i.para.numberWeek)} ${i.para.name} ${i.para.aud} ${i.para.groupName}"
 
                     holder.binding.itemType.text = i.para.type
 

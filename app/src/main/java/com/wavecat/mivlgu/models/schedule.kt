@@ -8,7 +8,8 @@ import kotlinx.serialization.json.JsonNames
 data class ScheduleGetResult(
     val status: String,
     val time: String,
-    val group: Group,
+    val group: Group? = null,
+    val teacher: Teacher? = null,
     val semestr: String,
     val year: String,
     val disciplines: Map<String, Map<String, Map<String, List<Para>>>>,
@@ -38,14 +39,21 @@ data class Para(
     val aud: String,
     @JsonNames("number_week") val numberWeek: String,
     val comment: String,
-    val zaoch: Boolean,
-    val name: String,
+    val zaoch: Boolean? = null,
+    val name: String = "",
+    @JsonNames("group_name") val groupName: String = "",
     @JsonNames("count_fields_labs") val countFieldsLabs: String? = null,
     @JsonNames("under_group") val underGroup: String? = null
 )
 
 @Serializable
 data class Group(
+    val id: Int,
+    val name: String,
+)
+
+@Serializable
+data class Teacher(
     val id: Int,
     val name: String,
 )

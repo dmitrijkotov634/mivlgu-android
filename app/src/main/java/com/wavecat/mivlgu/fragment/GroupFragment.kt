@@ -1,13 +1,14 @@
 package com.wavecat.mivlgu.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.chip.Chip
 import com.wavecat.mivlgu.MainViewModel
 import com.wavecat.mivlgu.R
@@ -36,34 +37,73 @@ class GroupFragment : Fragment() {
 
         model.currentFacultyIndex.observe(viewLifecycleOwner) {
             binding.chipGroup.check(binding.chipGroup.getChildAt(it).id)
+            requireActivity().invalidateMenu()
         }
 
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menu.clear()
+
+                if (_binding == null) return
+
+                val index = _binding!!.chipGroup.indexOfChild(
+                    binding.chipGroup.findViewById<Chip>(binding.chipGroup.checkedChipId)
+                )
+
+                if (index == MainViewModel.teacherIndex) {
+                    menuInflater.inflate(R.menu.main_search_menu, menu)
+
+                    val searchView = menu.findItem(R.id.app_bar_search).actionView as SearchView
+
+                    searchView.setIconifiedByDefault(true)
+                    searchView.isIconified = false
+
+                    searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                        override fun onQueryTextSubmit(query: String?): Boolean {
+                            model.selectTeacher(query.toString())
+                            binding.progressBar.visibility = View.VISIBLE
+                            return true
+                        }
+
+                        override fun onQueryTextChange(newText: String?): Boolean = true
+                    })
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == android.R.id.home)
+                    findNavController().navigateUp()
+                return true
+            }
+        })
+
         binding.chipGroup.setOnCheckedStateChangeListener { group, _ ->
+            requireActivity().invalidateMenu()
+
             val index = group.indexOfChild(
                 group.findViewById<Chip>(group.checkedChipId)
             )
 
-            model.selectFaculty(index)
             model.repository.facultyIndex = index
 
             binding.progressBar.visibility = View.VISIBLE
-        }
 
-        model.loadingException.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            LoadingExceptionDialog().apply {
-                val bundle = Bundle()
-                bundle.putString(LoadingExceptionDialog.EXCEPTION_ARG, it.message)
-                arguments = bundle
-            }.show(
-                childFragmentManager, LoadingExceptionDialog.TAG
-            )
-            model.closeErrorDialog()
+            if (index == MainViewModel.teacherIndex)
+                model.selectTeacher(model.repository.teacherFio)
+            else model.selectFaculty(index)
         }
 
         model.currentGroupsList.observe(viewLifecycleOwner) { group ->
-            binding.groups.adapter = GroupAdapter(group) {
-                model.selectGroup(group[it], resources.getStringArray(R.array.days))
+
+            binding.groups.layoutManager =
+                GridLayoutManager(context, if (group.second == null) 2 else 1)
+
+            binding.groups.adapter = GroupAdapter(group.first) {
+                if (group.second == null) model.selectGroup(
+                    group.first[it],
+                    resources.getStringArray(R.array.days)
+                )
+                else model.selectTeacher(group.second!![it], resources.getStringArray(R.array.days))
 
                 val builder = NavOptions.Builder()
                     .setEnterAnim(androidx.appcompat.R.anim.abc_fade_in)

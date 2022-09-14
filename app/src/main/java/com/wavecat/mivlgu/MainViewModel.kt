@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.wavecat.mivlgu.adapters.TimetableAdapter
+import com.wavecat.mivlgu.models.ScheduleGetResult
 import com.wavecat.mivlgu.models.WeekType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,9 +19,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val currentTimetableInfo = MutableLiveData<TimetableInfo?>()
     val loadingException = MutableLiveData<Exception?>()
 
-    val currentGroupsList: MutableLiveData<List<String>> by lazy {
-        MutableLiveData<List<String>>().also {
-            selectFaculty(repository.facultyIndex)
+    val currentGroupsList: MutableLiveData<Pair<List<String>, List<Int>?>> by lazy {
+        MutableLiveData<Pair<List<String>, List<Int>?>>().also {
+            if (repository.facultyIndex != teacherIndex)
+                selectFaculty(repository.facultyIndex)
+            else if (repository.teacherFio != null)
+                selectTeacher(repository.teacherFio!!)
         }
     }
 
@@ -31,10 +35,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentDayIndex: Int
     )
 
+    private fun pickTeachers(fio: String): Map<String, Int> {
+        val calendar = Calendar.getInstance()
+        return Jsoup
+            .connect(baseUrl + "findteacher.php")
+            .data(
+                "semester", "1",
+                "year", calendar.get(Calendar.YEAR).toString(),
+                "fio", fio
+            )
+            .execute()
+            .parse()
+            .getElementsByTag("a").associate {
+                it.attr("data-teacher-name") to it.attr("data-teacher-id").toInt()
+            }
+    }
+
     private fun pickGroups(facultyId: Int): List<String> {
         val calendar = Calendar.getInstance()
         return Jsoup
-            .connect("https://www.mivlgu.ru/out-inf/scala/groups.php")
+            .connect(baseUrl + "groups.php")
             .data(
                 "semester", "1",
                 "year", calendar.get(Calendar.YEAR).toString(),
@@ -48,12 +68,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    fun selectTeacher(fio: String?) {
+        currentFacultyIndex.value = teacherIndex
+
+        println(fio)
+        if (fio == null) {
+            println("NULLR")
+            currentGroupsList.value = listOf<String>() to null
+            return
+        }
+
+        repository.teacherFio = fio
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val data = pickTeachers(fio)
+                println(data)
+                currentGroupsList.postValue(data.keys.toList() to data.values.toList())
+            } catch (e: Exception) {
+                loadingException.postValue(e)
+            }
+        }
+    }
+
     fun selectFaculty(index: Int) {
         currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val data = pickGroups(facultiesIds[index])
-                currentGroupsList.postValue(data)
+                currentGroupsList.postValue(pickGroups(facultiesIds[index]) to null)
             } catch (e: Exception) {
                 loadingException.postValue(e)
             }
@@ -61,6 +103,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectGroup(group: String, names: Array<String>) {
+        select({
+            Client().scheduleGetJson(
+                group,
+                "1",
+                Calendar.getInstance().get(Calendar.YEAR).toString()
+            )
+        }, names)
+    }
+
+    fun selectTeacher(teacherId: Int, names: Array<String>) {
+        select({
+            Client().scheduleGetTeacherJson(
+                teacherId,
+                "1",
+                Calendar.getInstance().get(Calendar.YEAR).toString()
+            )
+        }, names)
+    }
+
+    private inline fun select(
+        crossinline func: suspend () -> ScheduleGetResult,
+        names: Array<String>
+    ) {
         val calendar = Calendar.getInstance()
         calendar.firstDayOfWeek = Calendar.MONDAY
 
@@ -76,8 +141,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
             try {
-                val data =
-                    Client().scheduleGetJson(group, "1", calendar.get(Calendar.YEAR).toString())
+                val data = func()
 
                 if (week.indexOf(dayOfWeek) > data.disciplines.size - 1)
                     isEven = !isEven
@@ -142,6 +206,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
+        const val baseUrl = "https://www.mivlgu.ru/out-inf/scala/"
+        const val teacherIndex = 5
+
         val facultiesIds = listOf(2, 10, 4, 9, 16)
         val week = listOf(
             Calendar.MONDAY,

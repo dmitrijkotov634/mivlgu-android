@@ -1,6 +1,7 @@
 package com.wavecat.mivlgu
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavOptions
@@ -11,11 +12,14 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.color.DynamicColors
 import com.wavecat.mivlgu.databinding.ActivityMainBinding
+import com.wavecat.mivlgu.fragment.LoadingExceptionDialog
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    private val model by viewModels<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DynamicColors.applyToActivityIfAvailable(this)
@@ -42,6 +46,19 @@ class MainActivity : AppCompatActivity() {
             navController.popBackStack()
             navController.navigate(getMenu(it.itemId), null, builder.build())
             true
+        }
+
+        model.loadingException.observe(this) {
+            if (it == null) return@observe
+            it.printStackTrace()
+            LoadingExceptionDialog().apply {
+                val bundle = Bundle()
+                bundle.putString(LoadingExceptionDialog.EXCEPTION_ARG, it.toString())
+                arguments = bundle
+            }.show(
+                supportFragmentManager, LoadingExceptionDialog.TAG
+            )
+            model.closeErrorDialog()
         }
     }
 

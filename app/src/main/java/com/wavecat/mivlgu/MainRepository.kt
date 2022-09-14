@@ -16,7 +16,15 @@ class MainRepository(context: Context) : Repository {
             apply()
         }
 
+    override var teacherFio: String?
+        get() = preferences.getString(TEACHER_FIO, null)
+        set(value) = preferences.edit {
+            putString(TEACHER_FIO, value)
+            apply()
+        }
+
     companion object {
         const val FACULTY_INDEX = "faculty_index"
+        const val TEACHER_FIO = "teacher_fio"
     }
 }

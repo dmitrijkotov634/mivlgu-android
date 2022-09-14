@@ -27,6 +27,7 @@ class InfoFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.telegram.movementMethod = LinkMovementMethod.getInstance()
+        binding.vk.movementMethod = LinkMovementMethod.getInstance()
     }
 
     override fun onDestroyView() {
