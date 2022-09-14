@@ -17,7 +17,7 @@ class MainRepository(context: Context) : Repository {
         }
 
     override var teacherFio: String?
-        get() = preferences.getString(TEACHER_FIO, null)
+        get() = preferences.getString(TEACHER_FIO, "")
         set(value) = preferences.edit {
             putString(TEACHER_FIO, value)
             apply()

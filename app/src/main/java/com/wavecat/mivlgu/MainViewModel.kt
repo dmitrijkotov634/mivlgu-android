@@ -71,9 +71,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun selectTeacher(fio: String?) {
         currentFacultyIndex.value = teacherIndex
 
-        println(fio)
-        if (fio == null) {
-            println("NULLR")
+        if (fio.isNullOrEmpty()) {
             currentGroupsList.value = listOf<String>() to null
             return
         }
