@@ -16,9 +16,7 @@ import com.wavecat.mivlgu.models.WeekType
 
 class TimetableAdapter(
     var items: List<TimetableItem>,
-) : RecyclerView.Adapter<TimetableAdapter.ViewHolder>() {
-
-    open class ViewHolder(view: View) : RecyclerView.ViewHolder(view)
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     interface TimetableItem
 
@@ -30,15 +28,15 @@ class TimetableAdapter(
         val para: Para,
     ) : TimetableItem
 
-    class DayViewHolder(view: View) : ViewHolder(view) {
+    class DayViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var binding = DayHeaderBinding.bind(view)
     }
 
-    class KlassViewHolder(view: View) : ViewHolder(view) {
+    class KlassViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var binding = KlassHeaderBinding.bind(view)
     }
 
-    class ItemViewHolder(view: View) : ViewHolder(view) {
+    class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var binding = ItemLayoutBinding.bind(view)
     }
 
@@ -50,7 +48,7 @@ class TimetableAdapter(
             else -> throw IllegalArgumentException()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             DAY_HEADER -> DayViewHolder(
                 LayoutInflater.from(parent.context)
@@ -68,7 +66,7 @@ class TimetableAdapter(
         }
 
     @SuppressLint("SetTextI18n")
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val i = items[position]
 
         when (holder) {
@@ -91,7 +89,7 @@ class TimetableAdapter(
             is ItemViewHolder -> {
                 if (i is ParaItem) {
                     holder.binding.itemTitle.text =
-                        "${i.para.discipline}${i.para.underGroup ?: (" " + i.para.numberWeek)} ${i.para.name} ${i.para.aud} ${i.para.groupName}"
+                        "${i.para.discipline}${if (i.para.underGroup.isNullOrEmpty()) " " + i.para.numberWeek else i.para.underGroup} ${i.para.name} ${i.para.aud} ${i.para.groupName}"
 
                     holder.binding.itemType.text = i.para.type
 
