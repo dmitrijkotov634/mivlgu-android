@@ -65,6 +65,11 @@ class TimetableFragment : Fragment() {
 
             binding.progressBar.visibility = View.INVISIBLE
         }
+
+        model.loadingException.observe(viewLifecycleOwner) {
+            binding.error1.text = if (it == null) "" else it.message
+            binding.error1.visibility = if (it == null) View.GONE else View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {

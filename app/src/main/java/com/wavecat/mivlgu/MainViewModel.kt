@@ -70,6 +70,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private suspend fun runAndCatch(func: suspend () -> Unit) = try {
         func()
+        loadingException.postValue(null)
     } catch (e: Exception) {
         loadingException.postValue(e)
     }
@@ -95,8 +96,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun selectFaculty(index: Int) {
         currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
+            currentGroupsList.postValue(repository.getFacultyCache(index) to null)
             runAndCatch {
-                currentGroupsList.postValue(pickGroups(facultiesIds[index]) to null)
+                val data = pickGroups(facultiesIds[index])
+                currentGroupsList.postValue(data to null)
+                repository.saveFacultyCache(index, data)
             }
         }
     }
@@ -104,26 +108,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun selectGroup(group: String, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
             runAndCatch {
-                next(
-                    client.scheduleGetJson(
-                        group,
-                        "1",
-                        Calendar.getInstance().get(Calendar.YEAR).toString()
-                    ), names
+                next(repository.getGroupsCache(group), names)
+                val result = client.scheduleGetJson(
+                    group,
+                    "1",
+                    Calendar.getInstance().get(Calendar.YEAR).toString()
                 )
+                next(result, names)
+                repository.saveGroupsCache(group, result)
             }
         }
 
     fun selectTeacher(teacherId: Int, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
             runAndCatch {
-                next(
-                    client.scheduleGetTeacherJson(
-                        teacherId,
-                        "1",
-                        Calendar.getInstance().get(Calendar.YEAR).toString()
-                    ), names
+                next(repository.getGroupsCache(teacherId.toString()), names)
+                val result = client.scheduleGetTeacherJson(
+                    teacherId,
+                    "1",
+                    Calendar.getInstance().get(Calendar.YEAR).toString()
                 )
+                next(result, names)
+                repository.saveGroupsCache(teacherId.toString(), result)
             }
         }
 
@@ -191,10 +197,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deselect() {
         currentTimetableInfo.value = null
-    }
-
-    fun closeErrorDialog() {
-        loadingException.value = null
     }
 
     companion object {

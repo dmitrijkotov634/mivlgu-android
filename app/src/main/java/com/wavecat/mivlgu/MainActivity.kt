@@ -12,7 +12,6 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.color.DynamicColors
 import com.wavecat.mivlgu.databinding.ActivityMainBinding
-import com.wavecat.mivlgu.fragment.LoadingExceptionDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        model.loadingException.observe(this) {
+        /*model.loadingException.observe(this) {
             if (it == null) return@observe
             it.printStackTrace()
             LoadingExceptionDialog().apply {
@@ -59,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager, LoadingExceptionDialog.TAG
             )
             model.closeErrorDialog()
-        }
+        }*/
     }
 
     private fun getMenu(id: Int) =

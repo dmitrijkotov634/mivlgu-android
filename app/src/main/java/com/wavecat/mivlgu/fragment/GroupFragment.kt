@@ -123,6 +123,11 @@ class GroupFragment : Fragment() {
 
             binding.progressBar.visibility = View.INVISIBLE
         }
+
+        model.loadingException.observe(viewLifecycleOwner) {
+            binding.error.text = if (it == null) "" else it.message
+            binding.error.visibility = if (it == null) View.GONE else View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {
