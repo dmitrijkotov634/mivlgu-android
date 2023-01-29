@@ -36,7 +36,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentDayIndex: Int
     )
 
-
     private suspend fun runAndCatch(func: suspend () -> Unit) = try {
         func()
         loadingException.postValue(null)
@@ -79,6 +78,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectGroup(group: String, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
+            val calendar = Calendar.getInstance()
             isLoading.postValue(true)
             runAndCatch {
                 next(repository.getGroupsCache(group), names)
@@ -95,6 +95,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectTeacher(teacherId: Int, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
+            val calendar = Calendar.getInstance()
             runAndCatch {
                 isLoading.postValue(true)
                 next(repository.getGroupsCache(teacherId.toString()), names)
@@ -179,7 +180,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         const val teacherIndex = 5
 
         val client = Client()
-        val calendar = Calendar.getInstance()
 
         val facultiesIds = listOf(2, 10, 4, 9, 16)
         val week = listOf(

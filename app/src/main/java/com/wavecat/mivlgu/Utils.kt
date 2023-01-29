@@ -4,10 +4,9 @@ import java.util.*
 
 class Utils {
     companion object {
-        fun getSemester(calendar: Calendar): String {
-            val month = calendar.get(Calendar.MONTH)
-            return if (month < Calendar.SEPTEMBER) "2" else "1"
-        }
+        fun getSemester(calendar: Calendar): String =
+            if (calendar.get(Calendar.MONTH) < Calendar.SEPTEMBER) "2" else "1"
+
 
         fun getYear(calendar: Calendar): String {
             val result = Calendar.getInstance()
