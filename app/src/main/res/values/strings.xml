@@ -18,7 +18,7 @@
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
 
-    <string name="github" translatable="false">Github</string>
+    <string name="github" translatable="false">GitHub</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>
