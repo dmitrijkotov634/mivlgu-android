@@ -9,11 +9,12 @@ import com.wavecat.mivlgu.models.ScheduleGetResult
 import com.wavecat.mivlgu.models.WeekType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
 import java.util.*
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     val repository = MainRepository(application)
+
+    val isLoading = MutableLiveData<Boolean>()
 
     val currentFacultyIndex = MutableLiveData<Int>()
     val currentTimetableInfo = MutableLiveData<TimetableInfo?>()
@@ -35,43 +36,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentDayIndex: Int
     )
 
-    private fun pickTeachers(fio: String): Map<String, Int> {
-        val calendar = Calendar.getInstance()
-        return Jsoup
-            .connect(baseUrl + "findteacher.php")
-            .data(
-                "semester", "1",
-                "year", calendar.get(Calendar.YEAR).toString(),
-                "fio", fio
-            )
-            .execute()
-            .parse()
-            .getElementsByTag("a").associate {
-                it.attr("data-teacher-name") to it.attr("data-teacher-id").toInt()
-            }
-    }
-
-    private fun pickGroups(facultyId: Int): List<String> {
-        val calendar = Calendar.getInstance()
-        return Jsoup
-            .connect(baseUrl + "groups.php")
-            .data(
-                "semester", "1",
-                "year", calendar.get(Calendar.YEAR).toString(),
-                "faculty", facultyId.toString(),
-                "group", ""
-            )
-            .execute()
-            .parse()
-            .getElementsByTag("a").map {
-                it.attr("data-group-name")
-            }
-    }
 
     private suspend fun runAndCatch(func: suspend () -> Unit) = try {
         func()
         loadingException.postValue(null)
     } catch (e: Exception) {
+        e.printStackTrace()
         loadingException.postValue(e)
     }
 
@@ -87,7 +57,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch(Dispatchers.IO) {
             runAndCatch {
-                val data = pickTeachers(fio)
+                val data = Parser.pickTeachers(fio)
                 currentGroupsList.postValue(data.keys.toList() to data.values.toList())
             }
         }
@@ -96,40 +66,46 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun selectFaculty(index: Int) {
         currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
+            isLoading.postValue(true)
             currentGroupsList.postValue(repository.getFacultyCache(index) to null)
             runAndCatch {
-                val data = pickGroups(facultiesIds[index])
+                val data = Parser.pickGroups(facultiesIds[index])
                 currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(index, data)
+                isLoading.postValue(false)
             }
         }
     }
 
     fun selectGroup(group: String, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
+            isLoading.postValue(true)
             runAndCatch {
                 next(repository.getGroupsCache(group), names)
                 val result = client.scheduleGetJson(
                     group,
-                    "1",
-                    Calendar.getInstance().get(Calendar.YEAR).toString()
+                    Utils.getSemester(calendar),
+                    Utils.getYear(calendar)
                 )
                 next(result, names)
                 repository.saveGroupsCache(group, result)
+                isLoading.postValue(false)
             }
         }
 
     fun selectTeacher(teacherId: Int, names: Array<String>) =
         viewModelScope.launch(Dispatchers.IO) {
             runAndCatch {
+                isLoading.postValue(true)
                 next(repository.getGroupsCache(teacherId.toString()), names)
                 val result = client.scheduleGetTeacherJson(
                     teacherId,
-                    "1",
-                    Calendar.getInstance().get(Calendar.YEAR).toString()
+                    Utils.getSemester(calendar),
+                    Utils.getYear(calendar)
                 )
                 next(result, names)
                 repository.saveGroupsCache(teacherId.toString(), result)
+                isLoading.postValue(false)
             }
         }
 
@@ -200,10 +176,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        const val baseUrl = "https://www.mivlgu.ru/out-inf/scala/"
         const val teacherIndex = 5
 
         val client = Client()
+        val calendar = Calendar.getInstance()
 
         val facultiesIds = listOf(2, 10, 4, 9, 16)
         val week = listOf(

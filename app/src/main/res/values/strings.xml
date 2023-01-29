@@ -12,12 +12,11 @@
     <string name="odd">Odd</string>
     <string name="info">Info</string>
 
-    <string name="about" translatable="false"><a href="https://t.me/wavecat">@wavecat</a></string>
-    <string name="about2" translatable="false"><a href="https://vk.com/bomb3r">@bomb3r</a></string>
-
-    <string name="failed_loading">Failed to load page</string>
     <string name="search">Search</string>
     <string name="teacher">Teacher</string>
+
+    <string name="telegram">Telegram</string>
+    <string name="vkontakte">Vkontakte</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

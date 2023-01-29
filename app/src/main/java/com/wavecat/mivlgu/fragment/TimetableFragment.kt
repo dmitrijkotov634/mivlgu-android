@@ -62,13 +62,10 @@ class TimetableFragment : Fragment() {
                     adapter.notifyDataSetChanged()
                 }
             }
-
-            binding.progressBar.visibility = View.INVISIBLE
         }
 
-        model.loadingException.observe(viewLifecycleOwner) {
-            binding.error1.text = if (it == null) "" else it.message
-            binding.error1.visibility = if (it == null) View.GONE else View.VISIBLE
+        model.isLoading.observe(viewLifecycleOwner) {
+            binding.progressBar.visibility = if (it) View.VISIBLE else View.INVISIBLE
         }
     }
 

@@ -47,18 +47,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        /*model.loadingException.observe(this) {
-            if (it == null) return@observe
-            it.printStackTrace()
-            LoadingExceptionDialog().apply {
-                val bundle = Bundle()
-                bundle.putString(LoadingExceptionDialog.EXCEPTION_ARG, it.toString())
-                arguments = bundle
-            }.show(
-                supportFragmentManager, LoadingExceptionDialog.TAG
-            )
-            model.closeErrorDialog()
-        }*/
+        model.loadingException.observe(this) {
+            binding.toolbar.subtitle = if (it == null) "" else it.message
+        }
     }
 
     private fun getMenu(id: Int) =

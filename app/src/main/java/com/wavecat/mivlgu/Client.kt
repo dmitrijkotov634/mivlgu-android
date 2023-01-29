@@ -17,7 +17,7 @@ class Client {
 
     suspend fun scheduleGetJson(group: String, semester: String, year: String): ScheduleGetResult =
         client.get {
-            url("https://scala.mivlgu.ru/core/frontend/index.php?r=schedulecash/group")
+            url("$baseUrl?r=schedulecash/group")
             parameter("group", group)
             parameter("semester", semester)
             parameter("year", year)
@@ -30,10 +30,14 @@ class Client {
         year: String
     ): ScheduleGetResult =
         client.get {
-            url("https://scala.mivlgu.ru/core/frontend/index.php?r=schedulecash/teacher")
+            url("$baseUrl?r=schedulecash/teacher")
             parameter("teacher_id", teacherId)
             parameter("semester", semester)
             parameter("year", year)
             parameter("format", "json")
         }.body()
+
+    companion object {
+        const val baseUrl = "https://scala.mivlgu.ru/core/frontend/index.php"
+    }
 }

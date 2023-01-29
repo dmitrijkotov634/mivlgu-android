@@ -8,10 +8,11 @@
 
     <string name="info">Информация</string>
 
-    <string name="failed_loading">Не удалось загрузить страницу</string>
-
     <string name="search">Поиск</string>
     <string name="teacher">Препод.</string>
+
+    <string name="vkontakte">Вконтакте</string>
+    <string name="telegram">Телеграм</string>
 
     <string-array name="days">
         <item>Понедельник</item>

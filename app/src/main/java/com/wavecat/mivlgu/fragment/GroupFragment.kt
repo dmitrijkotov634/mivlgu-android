@@ -64,12 +64,13 @@ class GroupFragment : Fragment() {
                     searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                         override fun onQueryTextSubmit(query: String?): Boolean {
                             model.selectTeacher(query.toString())
-                            binding.progressBar.visibility = View.VISIBLE
                             return true
                         }
 
                         override fun onQueryTextChange(newText: String?): Boolean = true
                     })
+
+                    searchView.clearFocus()
                 }
             }
 
@@ -88,8 +89,6 @@ class GroupFragment : Fragment() {
             )
 
             model.repository.facultyIndex = index
-
-            binding.progressBar.visibility = View.VISIBLE
 
             if (index == MainViewModel.teacherIndex)
                 model.selectTeacher(model.repository.teacherFio)
@@ -120,13 +119,10 @@ class GroupFragment : Fragment() {
                     getSystemService(requireContext(), InputMethodManager::class.java)
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
-
-            binding.progressBar.visibility = View.INVISIBLE
         }
 
-        model.loadingException.observe(viewLifecycleOwner) {
-            binding.error.text = if (it == null) "" else it.message
-            binding.error.visibility = if (it == null) View.GONE else View.VISIBLE
+        model.isLoading.observe(viewLifecycleOwner) {
+            binding.progressBar.visibility = if (it) View.VISIBLE else View.INVISIBLE
         }
     }
 
