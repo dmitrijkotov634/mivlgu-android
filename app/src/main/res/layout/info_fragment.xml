@@ -35,7 +35,7 @@
         android:id="@+id/vk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:drawableLeft="@drawable/ic_vk"
         android:text="@string/vkontakte"
         app:layout_constraintBottom_toTopOf="@+id/telegram"
@@ -46,15 +46,26 @@
 
     <Button
         android:id="@+id/telegram"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
         android:drawableLeft="@drawable/ic_telegram"
         android:text="@string/telegram"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/textView2"
+        app:layout_constraintBottom_toTopOf="@+id/github"
+        app:layout_constraintEnd_toEndOf="@+id/vk"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/textView2"
+        app:layout_constraintStart_toStartOf="@+id/vk"
         app:layout_constraintTop_toBottomOf="@+id/vk" />
+
+    <Button
+        android:id="@+id/github"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_octocat"
+        android:text="@string/github"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/vk"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/vk"
+        app:layout_constraintTop_toBottomOf="@+id/telegram" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

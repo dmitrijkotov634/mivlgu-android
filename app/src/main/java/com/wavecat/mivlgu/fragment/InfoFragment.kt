@@ -35,6 +35,15 @@ class InfoFragment : Fragment() {
         binding.vk.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://vk.com/bomb3r")))
         }
+
+        binding.github.setOnClickListener {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://github.com/dmitrijkotov634/mivlgu-android")
+                )
+            )
+        }
     }
 
     override fun onDestroyView() {
