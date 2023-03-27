@@ -12,8 +12,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
-import com.wavecat.mivlgu.ChatViewModel
 import com.wavecat.mivlgu.adapters.MessagesAdapter
+import com.wavecat.mivlgu.chat.ChatViewModel
 import com.wavecat.mivlgu.databinding.ChatFragmentBinding
 
 class ChatFragment : Fragment() {
