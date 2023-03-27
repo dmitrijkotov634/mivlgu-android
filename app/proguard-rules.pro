@@ -23,3 +23,7 @@
 -keepclassmembers class com.wavecat.mivlgu.models.** {
   *;
 }
+
+-keepclassmembers class com.wavecat.mivlgu.chat.** {
+  *;
+}

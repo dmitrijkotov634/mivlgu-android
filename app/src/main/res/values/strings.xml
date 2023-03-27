@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Timetable</string>
     <string name="timetable">Timetable</string>
+    <string name="chat">Chat</string>
 
     <string name="fitr" translatable="false">ФИТР</string>
     <string name="fem" translatable="false">ФЭМ</string>
@@ -19,6 +20,8 @@
     <string name="vkontakte">Vkontakte</string>
 
     <string name="github" translatable="false">Github</string>
+    <string name="message">Message</string>
+    <string name="empty" translatable="false">(^-^*)</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

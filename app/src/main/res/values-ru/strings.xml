@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Расписание</string>
     <string name="timetable">Расписание</string>
+    <string name="chat">Чат</string>
 
     <string name="even">Чётные</string>
     <string name="odd">Нечётные</string>
@@ -13,6 +14,7 @@
 
     <string name="vkontakte">Вконтакте</string>
     <string name="telegram">Телеграм</string>
+    <string name="message">Сообщение</string>
 
     <string-array name="days">
         <item>Понедельник</item>

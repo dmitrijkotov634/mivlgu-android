@@ -9,4 +9,9 @@
         android:id="@+id/info"
         android:icon="@drawable/ic_baseline_info_24"
         android:title="@string/info" />
+
+    <item
+        android:id="@+id/chat"
+        android:icon="@drawable/ic_baseline_chat_24"
+        android:title="@string/chat" />
 </menu>

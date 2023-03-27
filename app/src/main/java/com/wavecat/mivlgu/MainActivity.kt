@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         when (id) {
             R.id.timetable -> R.id.GroupFragment
             R.id.info -> R.id.InfoFragment
+            R.id.chat -> R.id.ChatFragment
             else -> R.id.GroupFragment
         }
 
