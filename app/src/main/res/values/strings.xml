@@ -19,7 +19,7 @@
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
 
-    <string name="github" translatable="false">Github</string>
+    <string name="github" translatable="false">GitHub</string>
     <string name="message">Message</string>
     <string name="empty" translatable="false">(^-^*)</string>
 
