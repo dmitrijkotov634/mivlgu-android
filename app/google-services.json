@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "505038129641",
+    "project_id": "mivlgu",
+    "storage_bucket": "mivlgu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505038129641:android:0d1f9305f65bef84c82378",
+        "android_client_info": {
+          "package_name": "com.wavecat.mivlgu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505038129641-b2apodk13eppv7vv2hb248t47pl2jvbc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWUUJC-Z6-i3IOX06h8tt9NwCkO_L61DQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505038129641-b2apodk13eppv7vv2hb248t47pl2jvbc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

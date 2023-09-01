@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import com.wavecat.mivlgu.models.ScheduleGetResult
+import com.wavecat.mivlgu.data.ScheduleGetResult
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class MainRepository(context: Context) : Repository {
+class MainRepository(context: Context) {
     private val preferences: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -19,14 +19,14 @@ class MainRepository(context: Context) : Repository {
     private val groupsPreferences: SharedPreferences =
         context.getSharedPreferences("groups", Context.MODE_PRIVATE)
 
-    override var facultyIndex: Int
+    var facultyIndex: Int
         get() = preferences.getInt(FACULTY_INDEX, 0)
         set(value) = preferences.edit {
             putInt(FACULTY_INDEX, value)
             apply()
         }
 
-    override var teacherFio: String?
+    var teacherFio: String?
         get() = preferences.getString(TEACHER_FIO, "")
         set(value) = preferences.edit {
             putString(TEACHER_FIO, value)

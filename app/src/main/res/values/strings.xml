@@ -3,6 +3,11 @@
     <string name="timetable">Timetable</string>
     <string name="chat">Chat</string>
 
+    <string name="current_week">%1$d week of study</string>
+    <string name="no_internet">No internet connection</string>
+
+    <string name="subgroup">s/g</string>
+
     <string name="fitr" translatable="false">ФИТР</string>
     <string name="fem" translatable="false">ФЭМ</string>
     <string name="msf" translatable="false">МСФ</string>
@@ -18,10 +23,14 @@
 
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
-
     <string name="github" translatable="false">GitHub</string>
+    <string name="iep">IEP</string>
+
     <string name="message">Message</string>
-    <string name="empty" translatable="false">(^-^*)</string>
+    <string name="delete">Delete</string>
+    <string name="empty" translatable="false">¯\\_(ツ)_/¯</string>
+    <string name="you">You</string>
+    <string name="assistant">ChatGPT</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

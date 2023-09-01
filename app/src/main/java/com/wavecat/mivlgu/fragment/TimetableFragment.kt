@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.wavecat.mivlgu.MainViewModel
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.adapters.TimetableAdapter
+import com.wavecat.mivlgu.adapter.TimetableAdapter
+import com.wavecat.mivlgu.data.WeekType
 import com.wavecat.mivlgu.databinding.TimetableFragmentBinding
-import com.wavecat.mivlgu.models.WeekType
 
 class TimetableFragment : Fragment() {
 
@@ -25,6 +25,10 @@ class TimetableFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        savedInstanceState?.getString(CACHE_KEY, null).let {
+            if (it != null)
+                model.restoreTimetableFromCache(it)
+        }
 
         _binding = TimetableFragmentBinding.inflate(inflater, container, false)
         return binding.root
@@ -37,7 +41,7 @@ class TimetableFragment : Fragment() {
         model.currentTimetableInfo.observe(viewLifecycleOwner) { info ->
             if (info == null) return@observe
 
-            binding.timetable.adapter = TimetableAdapter(info.filteredTimetable)
+            binding.timetable.adapter = TimetableAdapter(requireContext(), info.filteredTimetable, info.currentWeek)
 
             binding.timetable.scrollToPosition(info.currentDayIndex)
 
@@ -69,9 +73,17 @@ class TimetableFragment : Fragment() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(CACHE_KEY, requireArguments().getString(CACHE_KEY))
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        model.deselect()
         _binding = null
+    }
+
+    companion object {
+        const val CACHE_KEY = "cache_key"
     }
 }

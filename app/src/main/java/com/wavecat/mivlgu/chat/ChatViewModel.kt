@@ -2,12 +2,15 @@ package com.wavecat.mivlgu.chat
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.wavecat.mivlgu.chat.models.CompletionsInput
 import com.wavecat.mivlgu.chat.models.CompletionsResult
 import com.wavecat.mivlgu.chat.models.Message
-import com.wavecat.mivlgu.tokenizer.GPT2Tokenizer
+import com.wavecat.mivlgu.chat.plugins.Defaults
+import com.wavecat.mivlgu.chat.plugins.Plugin
+import com.wavecat.mivlgu.chat.tokenizer.GPT2Tokenizer
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -19,18 +22,33 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import java.io.IOException
+import kotlin.math.min
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val tokenizer by lazy { GPT2Tokenizer(application.assets) }
 
-    private val messages: MutableList<Message> = default.toMutableList()
+    private val messages: MutableList<Message> = mutableListOf()
 
     data class Event(
-        val messages: MutableList<Message>
+        val messages: MutableList<Message>,
+        val isNewMessage: Boolean
     )
 
-    val event = MutableLiveData(Event(messages))
-    val isLoading = MutableLiveData(false)
+    private val _event = MutableLiveData(Event(messages, false))
+    private val _messageInputText = MutableLiveData("")
+    private val _isLoading = MutableLiveData(false)
+    private val _noInternetConnection = MutableLiveData(false)
+
+    val event: LiveData<Event> = _event
+    val messageInputText: LiveData<String> = _messageInputText
+    val isLoading: LiveData<Boolean> = _isLoading
+    val noInternetConnection: LiveData<Boolean> = _noInternetConnection
+
+    private var plugins: List<Plugin> = listOf(
+        Defaults(),
+        //LinkReader(tokenizer)
+    )
 
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
@@ -40,83 +58,117 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         defaultRequest {
-            url("https://noisy-disk-8ba5.dmitrijkotov634.workers.dev/chat/")
+            url("https://mivlgu.dmitrijkotov634.workers.dev/chat")
             contentType(ContentType.Application.Json)
-            header(
-                "sign",
-                "Я использую API Дмитрия Котова t.me/wavecat, без его согласия"
-            )
+
         }
     }
 
-    fun sendMessage(text: String) {
-        isLoading.value = true
+    fun deleteMessage(position: Int) {
+        messages.removeAt(position)
+        _event.value = Event(messages, false)
+    }
 
-        messages.add(Message("user", text))
-        event.value = Event(messages)
+    fun sendMessage(text: String) {
+        _isLoading.value = true
+
+        val userMessage = Message(Message.USER, text)
+        messages.add(userMessage)
+        _event.value = Event(messages, true)
 
         viewModelScope.launch(Dispatchers.IO) {
-            cleanup()
+            val systemMessage = StringBuilder()
+
+            plugins.forEach { plugin ->
+                plugin.onPreProcessMessage(userMessage)?.let {
+                    systemMessage.append(it)
+                    if (it.isNotBlank())
+                        systemMessage.append("\n")
+                }
+            }
+
+            val systemMessageString = systemMessage.toString()
+            val systemTokens = tokenizer.encode(systemMessageString).size
+            val tokenLimit = MAX_TOKENS - min(systemTokens, MAX_TOKENS)
+            val (inputMessages, _) = trimMessages(messages, tokenLimit)
+            val inputMessagesMutable = inputMessages.toMutableList().apply {
+                add(0, Message(Message.SYSTEM, systemMessageString))
+            }
 
             try {
                 val response: CompletionsResult = client.post {
-                    setBody(CompletionsInput(
-                        "gpt-3.5-turbo",
-                        messages.filter {
-                            !it.isInternalRole()
-                        }
-                    ))
+                    setBody(
+                        CompletionsInput(
+                            "gpt-3.5-turbo",
+                            inputMessagesMutable
+                        )
+                    )
                 }.body()
 
-                messages.add(response.choices[0].message)
+                val message = response.choices[0].message
+                messages.add(message)
+                plugins.forEach { it.onPostProcessMessage(message) }
+                _event.postValue(Event(messages, true))
+            } catch (e: IOException) {
+                _noInternetConnection.postValue(true)
             } catch (e: Exception) {
-                messages.add(Message("error", e.message.toString()))
+                messages.add(Message(Message.ERROR, e.message.toString()))
+                _event.postValue(Event(messages, true))
             }
 
-            event.postValue(Event(messages))
-            isLoading.postValue(false)
+            _isLoading.postValue(false)
         }
+    }
+
+    fun saveInputText(text: String) {
+        _messageInputText.value = text
     }
 
     fun clear() {
         messages.clear()
-        messages.addAll(default)
-        event.value = Event(messages)
+        _event.value = Event(messages, false)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            plugins.forEach { it.onClearContext() }
+        }
     }
 
-    private fun cleanup() {
+    private fun trimMessages(
+        inputMessages: List<Message>,
+        tokenLimit: Int
+    ): Pair<List<Message>, Int> {
+        val resultMessages = mutableListOf<Message>()
+
         var numTokens = 0
 
-        for (message in messages.drop(1).reversed()) {
-            if (message.isInternalRole())
-                continue
-            numTokens += 4
+        for (message in inputMessages.reversed()) {
+            if (message.isInternalRole()) continue
+
+            numTokens += 6
             numTokens += tokenizer.encode(message.role).size
             numTokens += tokenizer.encode(message.content).size
-            numTokens += 2
+
+            if (numTokens > tokenLimit) {
+                if (resultMessages.isEmpty())
+                    resultMessages.add(
+                        message.copy(
+                            content = tokenizer.crop(
+                                message.content,
+                                tokenLimit
+                            )
+                        )
+                    )
+
+                break
+            }
+
+            resultMessages.add(message)
         }
 
-        for (message in messages.drop(1)) {
-            if (message.isInternalRole())
-                continue
-            if (numTokens < maxTokens)
-                break
-            numTokens -= 4
-            numTokens -= tokenizer.encode(message.role).size
-            numTokens -= tokenizer.encode(message.content).size
-            numTokens -= 2
-            messages.remove(message)
-        }
+        return resultMessages.reversed() to numTokens
     }
 
     companion object {
-        const val maxTokens = 3500
-
-        private val default = listOf(
-            Message(
-                "system",
-                "Ты ассистент приложения для Муромского института МИВлГУ"
-            )
-        )
+        const val MAX_TOKENS = 4096
     }
 }

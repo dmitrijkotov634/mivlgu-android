@@ -11,7 +11,9 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.color.DynamicColors
+import com.google.android.material.snackbar.Snackbar
 import com.wavecat.mivlgu.databinding.ActivityMainBinding
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,17 +50,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         model.loadingException.observe(this) {
-            binding.toolbar.subtitle = if (it == null) "" else it.message
+            if (it != null)
+                when (it) {
+                    is IOException -> Snackbar.make(binding.root, R.string.no_internet, Snackbar.LENGTH_SHORT).show()
+                    else -> binding.toolbar.subtitle = it.message
+                }
+        }
+
+        model.currentWeek.observe(this) {
+            binding.toolbar.subtitle = getString(R.string.current_week, it)
         }
     }
 
-    private fun getMenu(id: Int) =
-        when (id) {
-            R.id.timetable -> R.id.GroupFragment
-            R.id.info -> R.id.InfoFragment
-            R.id.chat -> R.id.ChatFragment
-            else -> R.id.GroupFragment
-        }
+    private fun getMenu(id: Int) = when (id) {
+        R.id.timetable -> R.id.GroupFragment
+        R.id.info -> R.id.InfoFragment
+        R.id.chat -> R.id.ChatFragment
+        else -> R.id.GroupFragment
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)

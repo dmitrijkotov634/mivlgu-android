@@ -1,5 +1,6 @@
 package com.wavecat.mivlgu
 
+import com.wavecat.mivlgu.data.HttpClient
 import kotlinx.coroutines.runBlocking
 
 
@@ -8,7 +9,7 @@ class ClientTest {
         @JvmStatic
         fun main(args: Array<String>) {
             runBlocking {
-                println(Client().scheduleGetJson("Р-121", "1", "2022"))
+                println(HttpClient().scheduleGetJson("Р-121", "1", "2022"))
             }
         }
     }

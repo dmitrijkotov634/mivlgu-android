@@ -4,6 +4,11 @@
     <string name="timetable">Расписание</string>
     <string name="chat">Чат</string>
 
+    <string name="current_week">Идёт %1$d учебная неделя</string>
+    <string name="no_internet">Нет интернет соединения</string>
+
+    <string name="subgroup">п/г</string>
+
     <string name="even">Чётные</string>
     <string name="odd">Нечётные</string>
 
@@ -14,7 +19,12 @@
 
     <string name="vkontakte">Вконтакте</string>
     <string name="telegram">Телеграм</string>
+    <string name="iep">ИОП</string>
+
     <string name="message">Сообщение</string>
+    <string name="delete">Удалить</string>
+    <string name="you">Ты</string>
+    <string name="assistant">ChatGPT</string>
 
     <string-array name="days">
         <item>Понедельник</item>

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="klass_header_size">16sp</dimen>
     <dimen name="item_size">16sp</dimen>
+    <dimen name="text_medium">14sp</dimen>
 </resources>

@@ -1,12 +1,10 @@
 package com.wavecat.mivlgu
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import com.wavecat.mivlgu.adapters.TimetableAdapter
-import com.wavecat.mivlgu.models.ScheduleGetResult
-import com.wavecat.mivlgu.models.WeekType
+import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import com.wavecat.mivlgu.adapter.TimetableAdapter
+import com.wavecat.mivlgu.data.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -14,18 +12,33 @@ import java.util.*
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     val repository = MainRepository(application)
 
-    val isLoading = MutableLiveData<Boolean>()
+    private val _isLoading = MutableLiveData<Boolean>()
 
-    val currentFacultyIndex = MutableLiveData<Int>()
-    val currentTimetableInfo = MutableLiveData<TimetableInfo?>()
-    val loadingException = MutableLiveData<Exception?>()
+    private val _currentFacultyIndex = MutableLiveData<Int>()
+    private val _currentTimetableInfo = MutableLiveData<TimetableInfo?>()
+    private val _loadingException = MutableLiveData<Exception?>()
 
-    val currentGroupsList: MutableLiveData<Pair<List<String>, List<Int>?>> by lazy {
+    private val _currentWeek = MutableLiveData<Int>()
+
+    private val _currentGroupsList: MutableLiveData<Pair<List<String>, List<Int>?>> by lazy {
         MutableLiveData<Pair<List<String>, List<Int>?>>().also {
-            if (repository.facultyIndex != teacherIndex)
+            if (repository.facultyIndex != TEACHER_INDEX)
                 selectFaculty(repository.facultyIndex)
             else if (!repository.teacherFio.isNullOrEmpty())
                 selectTeacher(repository.teacherFio!!)
+        }
+    }
+
+    val isLoading: LiveData<Boolean> = _isLoading
+    val currentFacultyIndex: LiveData<Int> = _currentFacultyIndex
+    val currentTimetableInfo: LiveData<TimetableInfo?> = _currentTimetableInfo
+    val loadingException: LiveData<Exception?> = _loadingException
+    val currentWeek: LiveData<Int> = _currentWeek
+    val currentGroupsList: LiveData<Pair<List<String>, List<Int>?>> = _currentGroupsList
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            runAndCatch { _currentWeek.postValue(parser.getWeekNumber()) }
         }
     }
 
@@ -33,22 +46,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val timetable: List<TimetableAdapter.TimetableItem>,
         val filteredTimetable: List<TimetableAdapter.TimetableItem>,
         val isEven: Boolean,
-        val currentDayIndex: Int
+        val currentDayIndex: Int,
+        val currentWeek: Int?
     )
 
-    private suspend fun runAndCatch(func: suspend () -> Unit) = try {
+    private inline fun runAndCatch(func: () -> Unit) = try {
         func()
-        loadingException.postValue(null)
+        _loadingException.postValue(null)
     } catch (e: Exception) {
         e.printStackTrace()
-        loadingException.postValue(e)
+        _loadingException.postValue(e)
     }
 
     fun selectTeacher(fio: String?) {
-        currentFacultyIndex.value = teacherIndex
+        _currentFacultyIndex.value = TEACHER_INDEX
 
         if (fio.isNullOrEmpty()) {
-            currentGroupsList.value = listOf<String>() to listOf()
+            _currentGroupsList.value = listOf<String>() to listOf()
             return
         }
 
@@ -56,84 +70,94 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch(Dispatchers.IO) {
             runAndCatch {
-                val data = Parser.pickTeachers(fio)
-                currentGroupsList.postValue(data.keys.toList() to data.values.toList())
+                val data = parser.pickTeachers(fio)
+                _currentGroupsList.postValue(data.keys.toList() to data.values.toList())
             }
         }
     }
 
     fun selectFaculty(index: Int) {
-        currentFacultyIndex.value = index
+        _currentFacultyIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
-            isLoading.postValue(true)
-            currentGroupsList.postValue(repository.getFacultyCache(index) to null)
+            _isLoading.postValue(true)
+            _currentGroupsList.postValue(repository.getFacultyCache(index) to null)
             runAndCatch {
-                val data = Parser.pickGroups(facultiesIds[index])
-                currentGroupsList.postValue(data to null)
+                val data = parser.pickGroups(Static.facultiesIds[index])
+                _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(index, data)
-                isLoading.postValue(false)
+                _isLoading.postValue(false)
             }
         }
     }
 
-    fun selectGroup(group: String, names: Array<String>) =
+    fun selectGroup(group: String) =
         viewModelScope.launch(Dispatchers.IO) {
             val calendar = Calendar.getInstance()
-            isLoading.postValue(true)
+            _isLoading.postValue(true)
             runAndCatch {
-                next(repository.getGroupsCache(group), names)
-                val result = client.scheduleGetJson(
+                _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(group)))
+                val result = httpClient.scheduleGetJson(
                     group,
-                    Utils.getSemester(calendar),
-                    Utils.getYear(calendar)
+                    Static.getSemester(calendar),
+                    Static.getYear(calendar)
                 )
-                next(result, names)
+                _currentTimetableInfo.postValue(createTimetableInfo(result))
                 repository.saveGroupsCache(group, result)
-                isLoading.postValue(false)
+                _isLoading.postValue(false)
             }
         }
 
-    fun selectTeacher(teacherId: Int, names: Array<String>) =
+    fun selectTeacher(teacherId: Int) =
         viewModelScope.launch(Dispatchers.IO) {
             val calendar = Calendar.getInstance()
             runAndCatch {
-                isLoading.postValue(true)
-                next(repository.getGroupsCache(teacherId.toString()), names)
-                val result = client.scheduleGetTeacherJson(
+                _isLoading.postValue(true)
+                _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(teacherId.toString())))
+                val result = httpClient.scheduleGetTeacherJson(
                     teacherId,
-                    Utils.getSemester(calendar),
-                    Utils.getYear(calendar)
+                    Static.getSemester(calendar),
+                    Static.getYear(calendar)
                 )
-                next(result, names)
+                _currentTimetableInfo.postValue(createTimetableInfo(result))
                 repository.saveGroupsCache(teacherId.toString(), result)
-                isLoading.postValue(false)
+                _isLoading.postValue(false)
             }
         }
 
-    private fun next(data: ScheduleGetResult, names: Array<String>) {
+    fun restoreTimetableFromCache(cacheKey: String) {
+        _currentWeek.observeForever(object : Observer<Int> {
+            override fun onChanged(value: Int) {
+                _currentTimetableInfo.value = createTimetableInfo(repository.getGroupsCache(cacheKey))
+                _isLoading.value = false
+                _currentWeek.removeObserver(this)
+            }
+        })
+    }
+
+    private fun createTimetableInfo(data: ScheduleGetResult): TimetableInfo {
         val calendar = Calendar.getInstance()
         calendar.firstDayOfWeek = Calendar.MONDAY
 
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
         val weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR)
 
-        var isEven = weekOfYear % 2 == 0
+        var isEven = (_currentWeek.value ?: weekOfYear) % 2 == 0
 
         var dayIndex = 0
 
         val list = mutableListOf<TimetableAdapter.TimetableItem>()
         val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
-        if (week.indexOf(dayOfWeek) > data.disciplines.size - 1)
+        if (Static.defaultWeek.indexOf(dayOfWeek) > data.disciplines.size - 1)
             isEven = !isEven
 
         data.disciplines.forEach { day ->
             val index = day.key.toInt() - 1
 
-            if (week[index] == dayOfWeek)
+            if (Static.defaultWeek[index] == dayOfWeek)
                 dayIndex = filteredList.size
 
-            val dayHeader = TimetableAdapter.DayHeader(names[index])
+            val dayHeader = TimetableAdapter.DayHeader(index)
             list.add(dayHeader)
             filteredList.add(dayHeader)
 
@@ -158,38 +182,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        val space = TimetableAdapter.DayHeader("\n")
+        val space = TimetableAdapter.DayHeader(-1)
         filteredList.add(space)
         list.add(space)
 
-        currentTimetableInfo.postValue(
-            TimetableInfo(
-                list,
-                filteredList,
-                isEven,
-                dayIndex
-            )
+        return TimetableInfo(
+            list,
+            filteredList,
+            isEven,
+            dayIndex,
+            _currentWeek.value
         )
-    }
-
-    fun deselect() {
-        currentTimetableInfo.value = null
     }
 
     companion object {
-        const val teacherIndex = 5
+        const val TEACHER_INDEX = 5
 
-        val client = Client()
-
-        val facultiesIds = listOf(2, 10, 4, 9, 16)
-        val week = listOf(
-            Calendar.MONDAY,
-            Calendar.TUESDAY,
-            Calendar.WEDNESDAY,
-            Calendar.THURSDAY,
-            Calendar.FRIDAY,
-            Calendar.SATURDAY,
-            Calendar.SUNDAY
-        )
+        val parser = Parser(Calendar.getInstance())
+        val httpClient = HttpClient()
     }
 }
