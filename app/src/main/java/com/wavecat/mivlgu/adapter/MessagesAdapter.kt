@@ -84,6 +84,7 @@ class MessagesAdapter(
             holder.binding.content.text = message.content
 
         holder.binding.content.setTextIsSelectable(false)
+
         holder.binding.content.post {
             holder.binding.content.setTextIsSelectable(true)
         }

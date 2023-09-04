@@ -60,7 +60,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         defaultRequest {
             url("https://mivlgu.dmitrijkotov634.workers.dev/chat")
             contentType(ContentType.Application.Json)
-
         }
     }
 

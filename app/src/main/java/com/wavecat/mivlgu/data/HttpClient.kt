@@ -6,11 +6,19 @@ import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNamingStrategy
 
 class HttpClient {
+    @OptIn(ExperimentalSerializationApi::class)
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+                namingStrategy = JsonNamingStrategy.SnakeCase
+            })
         }
     }
 

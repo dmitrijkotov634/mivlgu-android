@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.wavecat.mivlgu.data.ScheduleGetResult
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -18,6 +17,27 @@ class MainRepository(context: Context) {
 
     private val groupsPreferences: SharedPreferences =
         context.getSharedPreferences("groups", Context.MODE_PRIVATE)
+
+    var version: Int
+        get() = preferences.getInt(VERSION, 0)
+        set(value) = preferences.edit {
+            putInt(VERSION, value)
+            apply()
+        }
+
+    init {
+        if (version != BuildConfig.VERSION_CODE) {
+            listOf(
+                preferences,
+                facultyPreferences,
+                groupsPreferences
+            ).forEach {
+                it.edit().apply()
+            }
+
+            version = BuildConfig.VERSION_CODE
+        }
+    }
 
     var facultyIndex: Int
         get() = preferences.getInt(FACULTY_INDEX, 0)
@@ -68,5 +88,6 @@ class MainRepository(context: Context) {
     companion object {
         const val FACULTY_INDEX = "faculty_index"
         const val TEACHER_FIO = "teacher_fio"
+        const val VERSION = "version"
     }
 }

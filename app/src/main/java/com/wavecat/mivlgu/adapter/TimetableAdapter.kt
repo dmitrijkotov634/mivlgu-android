@@ -14,6 +14,7 @@ import com.wavecat.mivlgu.data.WeekType
 import com.wavecat.mivlgu.databinding.DayHeaderBinding
 import com.wavecat.mivlgu.databinding.ItemLayoutBinding
 import com.wavecat.mivlgu.databinding.KlassHeaderBinding
+import java.util.*
 
 
 class TimetableAdapter(
@@ -33,7 +34,7 @@ class TimetableAdapter(
 
     data class DayHeader(val title: Int) : TimetableItem
 
-    data class ParaHeader(val index: Int) : TimetableItem
+    data class ParaHeader(val index: Int, val isToday: Boolean) : TimetableItem
 
     data class ParaItem(
         val para: Para,
@@ -133,6 +134,16 @@ class TimetableAdapter(
                 if (i is ParaHeader) {
                     holder.binding.klassTime.text = time[i.index]
                     holder.binding.klassTitle.text = klass[i.index]
+
+                    val current = Calendar.getInstance().apply {
+                        val temp = Calendar.getInstance()
+                        timeInMillis = 0
+                        set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, temp.get(Calendar.MINUTE))
+                    }
+
+                    holder.binding.klassStatus.visibility =
+                        if (i.isToday && timeRanges[i.index].check(current)) View.VISIBLE else View.GONE
                 }
             }
 
@@ -191,6 +202,38 @@ class TimetableAdapter(
 
         const val FORMAT_START = "<b><big>"
         const val FORMAT_END = "</big></b>"
+
+        data class Time(
+            val hour: Int,
+            val minute: Int
+        ) {
+            operator fun rangeTo(time: Time) = TimeRange(this, time)
+
+            fun toCalendar(): Calendar = Calendar.getInstance().apply {
+                timeInMillis = 0
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+            }
+        }
+
+        data class TimeRange(
+            val start: Time,
+            val end: Time
+        ) {
+            fun check(current: Calendar): Boolean =
+                current.timeInMillis >= start.toCalendar().timeInMillis
+                        && current.timeInMillis <= end.toCalendar().timeInMillis
+        }
+
+        val timeRanges: List<TimeRange> = listOf(
+            Time(8, 30)..Time(10, 0),
+            Time(10, 15)..Time(11, 45),
+            Time(12, 30)..Time(14, 0),
+            Time(14, 15)..Time(15, 45),
+            Time(16, 0)..Time(17, 30),
+            Time(17, 45)..Time(19, 15),
+            Time(19, 30)..Time(21, 0)
+        )
     }
 }
 

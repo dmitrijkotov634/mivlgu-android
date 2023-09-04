@@ -34,8 +34,8 @@ android {
         applicationId = "com.wavecat.mivlgu"
         minSdk = 24
         targetSdk = 34
-        versionCode = 13
-        versionName = "1.2"
+        versionCode = 16
+        versionName = "1.3"
     }
 
     buildTypes {
@@ -81,10 +81,10 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("org.jsoup:jsoup:1.13.1")
     implementation("androidx.preference:preference:1.2.1")
-    implementation("io.ktor:ktor-client-core:2.2.4")
-    implementation("io.ktor:ktor-client-android:2.0.2")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.0.2")
-    implementation("io.ktor:ktor-client-content-negotiation:2.0.2")
+    implementation("io.ktor:ktor-client-core-jvm:2.3.4")
+    implementation("io.ktor:ktor-client-android-jvm:2.3.4")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
     implementation("com.google.api-client:google-api-client:1.32.2")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("io.noties.markwon:core:4.6.2")

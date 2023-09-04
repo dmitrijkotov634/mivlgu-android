@@ -38,7 +38,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            runAndCatch { _currentWeek.postValue(parser.getWeekNumber()) }
+            tryCatch { _currentWeek.postValue(parser.getWeekNumber()) }
         }
     }
 
@@ -50,12 +50,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentWeek: Int?
     )
 
-    private inline fun runAndCatch(func: () -> Unit) = try {
+    private inline fun tryCatch(ignore: Boolean = false, func: () -> Unit) = try {
         func()
         _loadingException.postValue(null)
     } catch (e: Exception) {
+        if (!ignore)
+            _loadingException.postValue(e)
+
         e.printStackTrace()
-        _loadingException.postValue(e)
     }
 
     fun selectTeacher(fio: String?) {
@@ -69,7 +71,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         repository.teacherFio = fio
 
         viewModelScope.launch(Dispatchers.IO) {
-            runAndCatch {
+            tryCatch {
                 val data = parser.pickTeachers(fio)
                 _currentGroupsList.postValue(data.keys.toList() to data.values.toList())
             }
@@ -78,24 +80,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectFaculty(index: Int) {
         _currentFacultyIndex.value = index
+
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
-            _currentGroupsList.postValue(repository.getFacultyCache(index) to null)
-            runAndCatch {
+
+            tryCatch(true) {
+                _currentGroupsList.postValue(repository.getFacultyCache(index) to null)
+            }
+
+            tryCatch {
                 val data = parser.pickGroups(Static.facultiesIds[index])
                 _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(index, data)
-                _isLoading.postValue(false)
             }
+
+            _isLoading.postValue(false)
         }
     }
 
     fun selectGroup(group: String) =
         viewModelScope.launch(Dispatchers.IO) {
-            val calendar = Calendar.getInstance()
             _isLoading.postValue(true)
-            runAndCatch {
+
+            tryCatch(true) {
                 _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(group)))
+            }
+
+            tryCatch {
+                val calendar = Calendar.getInstance()
                 val result = httpClient.scheduleGetJson(
                     group,
                     Static.getSemester(calendar),
@@ -103,16 +115,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 _currentTimetableInfo.postValue(createTimetableInfo(result))
                 repository.saveGroupsCache(group, result)
-                _isLoading.postValue(false)
             }
+
+            _isLoading.postValue(false)
         }
 
     fun selectTeacher(teacherId: Int) =
         viewModelScope.launch(Dispatchers.IO) {
-            val calendar = Calendar.getInstance()
-            runAndCatch {
-                _isLoading.postValue(true)
+            _isLoading.postValue(true)
+
+            tryCatch(true) {
                 _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(teacherId.toString())))
+            }
+
+            tryCatch {
+                val calendar = Calendar.getInstance()
                 val result = httpClient.scheduleGetTeacherJson(
                     teacherId,
                     Static.getSemester(calendar),
@@ -120,8 +137,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 _currentTimetableInfo.postValue(createTimetableInfo(result))
                 repository.saveGroupsCache(teacherId.toString(), result)
-                _isLoading.postValue(false)
             }
+
+            _isLoading.postValue(false)
         }
 
     fun restoreTimetableFromCache(cacheKey: String) {
@@ -135,8 +153,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun createTimetableInfo(data: ScheduleGetResult): TimetableInfo {
-        val calendar = Calendar.getInstance()
-        calendar.firstDayOfWeek = Calendar.MONDAY
+        val calendar = Calendar.getInstance().apply {
+            firstDayOfWeek = Calendar.MONDAY
+        }
 
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
         val weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR)
@@ -148,14 +167,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val list = mutableListOf<TimetableAdapter.TimetableItem>()
         val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
-        if (Static.defaultWeek.indexOf(dayOfWeek) > data.disciplines.size - 1)
-            isEven = !isEven
+        val inverted = (Static.defaultWeek.indexOf(dayOfWeek) > data.disciplines.size - 1).apply {
+            if (this) isEven = !isEven
+        }
 
         data.disciplines.forEach { day ->
             val index = day.key.toInt() - 1
 
-            if (Static.defaultWeek[index] == dayOfWeek)
-                dayIndex = filteredList.size
+            val isToday = (Static.defaultWeek[index] == dayOfWeek).apply {
+                if (this) dayIndex = filteredList.size
+            }
 
             val dayHeader = TimetableAdapter.DayHeader(index)
             list.add(dayHeader)
@@ -163,7 +184,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             day.value.forEach { klass ->
                 val paraHeader =
-                    TimetableAdapter.ParaHeader(klass.key.toInt() - 1)
+                    TimetableAdapter.ParaHeader(klass.key.toInt() - 1, isToday)
 
                 list.add(paraHeader)
                 filteredList.add(paraHeader)
@@ -191,7 +212,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             filteredList,
             isEven,
             dayIndex,
-            _currentWeek.value
+            _currentWeek.value?.plus(if (inverted) 1 else 0)
         )
     }
 
