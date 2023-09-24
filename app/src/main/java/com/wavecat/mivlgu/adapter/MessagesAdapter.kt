@@ -68,28 +68,36 @@ class MessagesAdapter(
 
     @SuppressLint("RtlHardcoded")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val message = messages[position]
+        holder.binding.apply {
+            val message = messages[position]
 
-        holder.binding.role.text = when {
-            message.isAssistantRole() -> context.getString(R.string.assistant)
-            message.isUserRole() -> context.getString(R.string.you)
-            else -> message.role.replaceFirstChar {
-                it.uppercase()
+            role.text = when {
+                message.isAssistantRole() -> context.getString(R.string.assistant)
+                message.isUserRole() -> context.getString(R.string.you)
+                else -> message.role.replaceFirstChar {
+                    it.uppercase()
+                }
             }
+
+            if (message.isAssistantRole() || message.isInternalRole())
+                markwon.setMarkdown(content, message.content)
+            else
+                content.text = message.content
+
+            roleIcon.setImageResource(
+                when {
+                    message.isAssistantRole() -> R.drawable.chatgpt_icon
+                    message.isUserRole() -> R.drawable.you_icon
+                    message.isInternalRole() -> R.drawable.error_icon
+                    else -> R.drawable.you_icon
+                }
+            )
+
+            content.setTextIsSelectable(false)
+            content.post { content.setTextIsSelectable(true) }
+
+            content.setOnClickListener { onClick(position, message) }
         }
-
-        if (message.isAssistantRole() || message.isInternalRole())
-            markwon.setMarkdown(holder.binding.content, message.content)
-        else
-            holder.binding.content.text = message.content
-
-        holder.binding.content.setTextIsSelectable(false)
-
-        holder.binding.content.post {
-            holder.binding.content.setTextIsSelectable(true)
-        }
-
-        holder.binding.content.setOnClickListener { onClick(position, message) }
     }
 
     override fun getItemCount() = messages.size

@@ -40,7 +40,7 @@
         android:drawableLeft="@drawable/ic_vk"
         android:drawableTint="?android:colorBackground"
         android:text="@string/vkontakte"
-        app:layout_constraintBottom_toTopOf="@+id/telegram"
+        app:layout_constraintBottom_toTopOf="@+id/github"
         app:layout_constraintEnd_toEndOf="@+id/textView2"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/textView2"
@@ -48,31 +48,17 @@
         tools:ignore="RtlHardcoded" />
 
     <Button
-        android:id="@+id/telegram"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:drawableTint="?android:colorBackground"
-        android:drawableLeft="@drawable/ic_telegram"
-        android:text="@string/telegram"
-        app:layout_constraintBottom_toTopOf="@+id/github"
-        app:layout_constraintEnd_toEndOf="@+id/vk"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/vk"
-        app:layout_constraintTop_toBottomOf="@+id/vk"
-        tools:ignore="RtlHardcoded" />
-
-    <Button
         android:id="@+id/github"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/ic_octocat"
-        android:text="@string/github"
         android:drawableTint="?android:colorBackground"
+        android:text="@string/github"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/vk"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/vk"
-        app:layout_constraintTop_toBottomOf="@+id/telegram"
+        app:layout_constraintTop_toBottomOf="@+id/vk"
         tools:ignore="RtlHardcoded" />
 
     <Button

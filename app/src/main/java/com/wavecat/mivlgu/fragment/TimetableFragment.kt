@@ -38,6 +38,13 @@ class TimetableFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        model.currentTimetableError.observe(viewLifecycleOwner) { error ->
+            binding.error.visibility = if (error == null) View.GONE else View.VISIBLE
+
+            if (error != null)
+                binding.error.text = error.title
+        }
+
         model.currentTimetableInfo.observe(viewLifecycleOwner) { info ->
             if (info == null) return@observe
 

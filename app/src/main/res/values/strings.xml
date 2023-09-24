@@ -32,6 +32,8 @@
     <string name="you">You</string>
     <string name="assistant">ChatGPT</string>
 
+    <string name="first_instruction"><big><big><b>ChatGPT</b></big></big><![CDATA[\n\n* May occasionally generate incorrect information\n* May occasionally produce harmful instructions or biased content\n* Limited knowledge of world and events after 2021]]></string>
+
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>
         <item>10.15 – 11.45</item>

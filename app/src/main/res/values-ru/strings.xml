@@ -26,6 +26,8 @@
     <string name="you">Ты</string>
     <string name="assistant">ChatGPT</string>
 
+    <string name="first_instruction"><big><big><b>ChatGPT</b></big></big><![CDATA[\n\n* Иногда может генерировать неверную информацию\n* Иногда может создавать вредные инструкции или предвзятый контент\n* Ограниченные знания о мире и событиях после 2021 года]]></string>
+
     <string-array name="days">
         <item>Понедельник</item>
         <item>Вторник</item>

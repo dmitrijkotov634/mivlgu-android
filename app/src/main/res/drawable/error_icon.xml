@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="?colorErrorContainer" />
+        </shape>
+    </item>
+    <item
+        android:width="25dp"
+        android:height="25dp"
+        android:top="5dp"
+        android:right="5dp"
+        android:left="5dp"
+        android:drawable="@drawable/outline_report_gmailerrorred_24"
+        android:bottom="5dp" />
+</layer-list>

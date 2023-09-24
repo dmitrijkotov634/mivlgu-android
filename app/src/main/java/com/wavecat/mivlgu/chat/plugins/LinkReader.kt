@@ -1,10 +1,10 @@
 package com.wavecat.mivlgu.chat.plugins
 
+import com.knuddels.jtokkit.api.Encoding
 import com.wavecat.mivlgu.chat.models.Message
-import com.wavecat.mivlgu.chat.tokenizer.GPT2Tokenizer
 import org.jsoup.Jsoup
 
-class LinkReader(private val tokenizer: GPT2Tokenizer) : Plugin {
+class LinkReader(private val encoding: Encoding) : Plugin {
 
     private val cache: MutableMap<String, String> = mutableMapOf()
     private val context: LinkedHashSet<String> = linkedSetOf()
@@ -40,7 +40,10 @@ class LinkReader(private val tokenizer: GPT2Tokenizer) : Plugin {
         }
 
         return data.joinToString("\n") {
-            tokenizer.crop(it, MAX_DATA_TOKENS / data.size)
+            encoding.decode(
+                encoding.encode(it)
+                    .take(MAX_DATA_TOKENS / data.size)
+            )
         }
     }
 

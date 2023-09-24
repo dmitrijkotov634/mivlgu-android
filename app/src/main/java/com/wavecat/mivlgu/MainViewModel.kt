@@ -16,6 +16,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentFacultyIndex = MutableLiveData<Int>()
     private val _currentTimetableInfo = MutableLiveData<TimetableInfo?>()
+    private val _currentTimetableError = MutableLiveData<TimetableError?>()
     private val _loadingException = MutableLiveData<Exception?>()
 
     private val _currentWeek = MutableLiveData<Int>()
@@ -32,13 +33,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isLoading: LiveData<Boolean> = _isLoading
     val currentFacultyIndex: LiveData<Int> = _currentFacultyIndex
     val currentTimetableInfo: LiveData<TimetableInfo?> = _currentTimetableInfo
+    val currentTimetableError: LiveData<TimetableError?> = _currentTimetableError
     val loadingException: LiveData<Exception?> = _loadingException
     val currentWeek: LiveData<Int> = _currentWeek
     val currentGroupsList: LiveData<Pair<List<String>, List<Int>?>> = _currentGroupsList
 
     init {
+        handleException(true) { _currentWeek.value = repository.lastWeekNumber }
+
         viewModelScope.launch(Dispatchers.IO) {
-            tryCatch { _currentWeek.postValue(parser.getWeekNumber()) }
+            handleException {
+                val weekNumber = parser.getWeekNumber()
+                _currentWeek.postValue(weekNumber)
+                repository.lastWeekNumber = weekNumber
+            }
         }
     }
 
@@ -50,7 +58,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val currentWeek: Int?
     )
 
-    private inline fun tryCatch(ignore: Boolean = false, func: () -> Unit) = try {
+    data class TimetableError(
+        val title: String,
+        val message: String
+    )
+
+    private inline fun handleException(ignore: Boolean = false, func: () -> Unit) = try {
         func()
         _loadingException.postValue(null)
     } catch (e: Exception) {
@@ -71,7 +84,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         repository.teacherFio = fio
 
         viewModelScope.launch(Dispatchers.IO) {
-            tryCatch {
+            handleException {
                 val data = parser.pickTeachers(fio)
                 _currentGroupsList.postValue(data.keys.toList() to data.values.toList())
             }
@@ -84,11 +97,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
 
-            tryCatch(true) {
+            handleException(true) {
                 _currentGroupsList.postValue(repository.getFacultyCache(index) to null)
             }
 
-            tryCatch {
+            handleException {
                 val data = parser.pickGroups(Static.facultiesIds[index])
                 _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(index, data)
@@ -98,59 +111,83 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectGroup(group: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            _isLoading.postValue(true)
+    fun selectGroup(group: String) {
+        _isLoading.value = true
 
-            tryCatch(true) {
-                _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(group)))
+        handleException(true) {
+            repository.getGroupsCache(group).let {
+                _currentTimetableError.postValue(createTimetableError(it))
+                _currentTimetableInfo.postValue(createTimetableInfo(it))
             }
+        }
 
-            tryCatch {
+        viewModelScope.launch(Dispatchers.IO) {
+            handleException {
                 val calendar = Calendar.getInstance()
-                val result = httpClient.scheduleGetJson(
+
+                httpClient.scheduleGetJson(
                     group,
                     Static.getSemester(calendar),
                     Static.getYear(calendar)
-                )
-                _currentTimetableInfo.postValue(createTimetableInfo(result))
-                repository.saveGroupsCache(group, result)
+                ).let {
+                    _currentTimetableError.postValue(createTimetableError(it))
+                    _currentTimetableInfo.postValue(createTimetableInfo(it))
+                    repository.saveGroupsCache(group, it)
+                }
             }
 
             _isLoading.postValue(false)
         }
+    }
 
-    fun selectTeacher(teacherId: Int) =
-        viewModelScope.launch(Dispatchers.IO) {
-            _isLoading.postValue(true)
+    fun selectTeacher(teacherId: Int) {
+        _isLoading.value = true
 
-            tryCatch(true) {
-                _currentTimetableInfo.postValue(createTimetableInfo(repository.getGroupsCache(teacherId.toString())))
+        handleException(true) {
+            repository.getGroupsCache(teacherId.toString()).let {
+                _currentTimetableError.value = createTimetableError(it)
+                _currentTimetableInfo.value = createTimetableInfo(it)
             }
+        }
 
-            tryCatch {
+        viewModelScope.launch(Dispatchers.IO) {
+            handleException {
                 val calendar = Calendar.getInstance()
-                val result = httpClient.scheduleGetTeacherJson(
+
+                httpClient.scheduleGetTeacherJson(
                     teacherId,
                     Static.getSemester(calendar),
                     Static.getYear(calendar)
-                )
-                _currentTimetableInfo.postValue(createTimetableInfo(result))
-                repository.saveGroupsCache(teacherId.toString(), result)
+                ).let {
+                    _currentTimetableError.postValue(createTimetableError(it))
+                    _currentTimetableInfo.postValue(createTimetableInfo(it))
+                    repository.saveGroupsCache(teacherId.toString(), it)
+                }
             }
 
             _isLoading.postValue(false)
         }
+    }
 
     fun restoreTimetableFromCache(cacheKey: String) {
         _currentWeek.observeForever(object : Observer<Int> {
             override fun onChanged(value: Int) {
-                _currentTimetableInfo.value = createTimetableInfo(repository.getGroupsCache(cacheKey))
-                _isLoading.value = false
+                repository.getGroupsCache(cacheKey).let {
+                    _currentTimetableError.value = createTimetableError(it)
+                    _currentTimetableInfo.value = createTimetableInfo(it)
+                    _isLoading.value = false
+                }
+
                 _currentWeek.removeObserver(this)
             }
         })
     }
+
+    private fun createTimetableError(data: ScheduleGetResult): TimetableError? =
+        if (data.status == Status.ERROR) TimetableError(
+            data.title,
+            data.message
+        ) else null
 
     private fun createTimetableInfo(data: ScheduleGetResult): TimetableInfo {
         val calendar = Calendar.getInstance().apply {
@@ -167,7 +204,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val list = mutableListOf<TimetableAdapter.TimetableItem>()
         val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
 
-        val inverted = (Static.defaultWeek.indexOf(dayOfWeek) > data.disciplines.size - 1).apply {
+        val lastDay = if (data.disciplines.size > 1) data.disciplines.keys.last().toInt() else 1
+        val inverted = (Static.defaultWeek.indexOf(dayOfWeek) > lastDay - 1).apply {
             if (this) isEven = !isEven
         }
 

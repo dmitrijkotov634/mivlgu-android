@@ -7,14 +7,25 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ScheduleGetResult(
-    val status: String,
+    val status: Status,
     val time: String,
     val group: Group? = null,
     val teacher: Teacher? = null,
-    val semestr: String,
-    val year: String,
-    val disciplines: Map<String, Map<String, Map<String, List<Para>>>>,
+    val title: String = "",
+    val message: String = "",
+    val semestr: String = "",
+    val year: String = "",
+    val disciplines: Map<String, Map<String, Map<String, List<Para>>>> = mapOf(),
 )
+
+@Serializable
+enum class Status {
+    @SerialName("error")
+    ERROR,
+
+    @SerialName("ok")
+    OK,
+}
 
 @Serializable
 enum class WeekType {

@@ -28,7 +28,7 @@ class InfoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.telegram.setOnClickListener { openUrl(TELEGRAM) }
+        //binding.telegram.setOnClickListener { openUrl(TELEGRAM) }
         binding.github.setOnClickListener { openUrl(GITHUB) }
         binding.vk.setOnClickListener { openUrl(VK) }
 

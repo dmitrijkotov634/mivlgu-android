@@ -5,12 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.knuddels.jtokkit.Encodings
+import com.knuddels.jtokkit.api.ModelType
 import com.wavecat.mivlgu.chat.models.CompletionsInput
 import com.wavecat.mivlgu.chat.models.CompletionsResult
 import com.wavecat.mivlgu.chat.models.Message
 import com.wavecat.mivlgu.chat.plugins.Defaults
 import com.wavecat.mivlgu.chat.plugins.Plugin
-import com.wavecat.mivlgu.chat.tokenizer.GPT2Tokenizer
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -20,15 +21,17 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.IOException
 import kotlin.math.min
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
-    private val tokenizer by lazy { GPT2Tokenizer(application.assets) }
-
     private val messages: MutableList<Message> = mutableListOf()
+
+    private val registry = Encodings.newLazyEncodingRegistry()
+    val encoding by lazy { registry.getEncodingForModel(ModelType.GPT_3_5_TURBO)!! }
 
     data class Event(
         val messages: MutableList<Message>,
@@ -47,7 +50,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private var plugins: List<Plugin> = listOf(
         Defaults(),
-        //LinkReader(tokenizer)
+
+        //LinkReader(encoding)
     )
 
     private val client = HttpClient(Android) {
@@ -87,7 +91,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val systemMessageString = systemMessage.toString()
-            val systemTokens = tokenizer.encode(systemMessageString).size
+            val systemTokens = encoding.encode(systemMessageString).size
             val tokenLimit = MAX_TOKENS - min(systemTokens, MAX_TOKENS)
             val (inputMessages, _) = trimMessages(messages, tokenLimit)
             val inputMessagesMutable = inputMessages.toMutableList().apply {
@@ -114,6 +118,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 messages.add(Message(Message.ERROR, e.message.toString()))
                 _event.postValue(Event(messages, true))
             }
+
+            delay(3000)
 
             _isLoading.postValue(false)
         }
@@ -144,16 +150,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             if (message.isInternalRole()) continue
 
             numTokens += 6
-            numTokens += tokenizer.encode(message.role).size
-            numTokens += tokenizer.encode(message.content).size
+            numTokens += encoding.encode(message.role).size
+            numTokens += encoding.encode(message.content).size
 
             if (numTokens > tokenLimit) {
                 if (resultMessages.isEmpty())
                     resultMessages.add(
                         message.copy(
-                            content = tokenizer.crop(
-                                message.content,
-                                tokenLimit
+                            content = encoding.decode(
+                                encoding.encode(message.content)
+                                    .take(tokenLimit)
                             )
                         )
                     )
@@ -168,6 +174,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        const val MAX_TOKENS = 4096
+        const val MAX_TOKENS = 3096
     }
 }

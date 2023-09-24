@@ -103,7 +103,11 @@ class TimetableAdapter(
             numberWeek
     }
 
-    private fun formatWeeks(underGroup: String, weekType: WeekType): String =
+    private fun formatWeeks(
+        underGroup: String,
+        weekType: WeekType,
+        group: Int? = null
+    ): String =
         underGroup
             .split(",")
             .joinToString(",") {
@@ -113,7 +117,19 @@ class TimetableAdapter(
                     } else {
                         val weekNumber = week.toInt()
                         if (weekNumber == currentWeek)
-                            "$FORMAT_START$week$FORMAT_END"
+                            buildString {
+                                append(FORMAT_START)
+
+                                if (group != null)
+                                    append("<font color=\"${groupColors[group]}\">")
+
+                                append(week)
+
+                                if (group != null)
+                                    append("</font>")
+
+                                append(FORMAT_END)
+                            }
                         else
                             week
                     }
@@ -154,9 +170,10 @@ class TimetableAdapter(
                     } else {
                         buildList {
                             if (!i.para.underGroup1.isNullOrEmpty())
-                                add("1$subgroup ${formatWeeks(i.para.underGroup1, i.para.typeWeek)}")
+                                add("1$subgroup ${formatWeeks(i.para.underGroup1, i.para.typeWeek, 0)}")
+
                             if (!i.para.underGroup2.isNullOrEmpty())
-                                add("2$subgroup ${formatWeeks(i.para.underGroup2, i.para.typeWeek)}")
+                                add("2$subgroup ${formatWeeks(i.para.underGroup2, i.para.typeWeek, 1)}")
                         }.joinToString(" ")
                     }
 
@@ -202,6 +219,8 @@ class TimetableAdapter(
 
         const val FORMAT_START = "<b><big>"
         const val FORMAT_END = "</big></b>"
+
+        val groupColors = listOf("#1E90FF", "#FF4500")
 
         data class Time(
             val hour: Int,

@@ -13,8 +13,10 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/message_input"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/progressBar"
+        app:layout_constraintVertical_bias="0.0"
         app:stackFromEnd="true" />
 
     <ImageView
@@ -78,10 +80,12 @@
 
     <TextView
         android:id="@+id/empty"
-        style="@style/TextAppearance.Material3.HeadlineLarge"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/empty"
+        android:layout_marginStart="42dp"
+        android:layout_marginEnd="42dp"
+        android:text="@string/first_instruction"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         app:layout_constraintBottom_toBottomOf="@+id/messages"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.wavecat.mivlgu.data.ScheduleGetResult
+import com.wavecat.mivlgu.data.Status
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -32,7 +33,10 @@ class MainRepository(context: Context) {
                 facultyPreferences,
                 groupsPreferences
             ).forEach {
-                it.edit().apply()
+                it
+                    .edit()
+                    .clear()
+                    .apply()
             }
 
             version = BuildConfig.VERSION_CODE
@@ -50,6 +54,13 @@ class MainRepository(context: Context) {
         get() = preferences.getString(TEACHER_FIO, "")
         set(value) = preferences.edit {
             putString(TEACHER_FIO, value)
+            apply()
+        }
+
+    var lastWeekNumber: Int
+        get() = preferences.getInt(LAST_WEEK_NUMBER, 4)
+        set(value) = preferences.edit {
+            putInt(LAST_WEEK_NUMBER, value)
             apply()
         }
 
@@ -74,10 +85,12 @@ class MainRepository(context: Context) {
     fun getGroupsCache(group: String): ScheduleGetResult {
         val result = groupsPreferences.getString(group, "")
         return if (result.isNullOrEmpty()) ScheduleGetResult(
-            "",
+            Status.OK,
             "",
             null,
             null,
+            "",
+            "",
             "",
             "",
             mapOf()
@@ -88,6 +101,8 @@ class MainRepository(context: Context) {
     companion object {
         const val FACULTY_INDEX = "faculty_index"
         const val TEACHER_FIO = "teacher_fio"
+        const val LAST_WEEK_NUMBER = "last_week_number"
+
         const val VERSION = "version"
     }
 }
