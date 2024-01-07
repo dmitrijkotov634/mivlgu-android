@@ -2,6 +2,8 @@
 
 package com.wavecat.mivlgu.data
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -39,6 +41,7 @@ enum class WeekType {
     ALL
 }
 
+@Parcelize
 @Serializable
 data class Para(
     val idDay: Int,
@@ -58,7 +61,7 @@ data class Para(
     val underGroup1: String? = null,
     @SerialName("under_group_2")
     val underGroup2: String? = null
-)
+) : Parcelable
 
 @Serializable
 data class Group(

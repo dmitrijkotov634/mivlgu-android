@@ -25,7 +25,7 @@
     <fragment
         android:id="@+id/ChatFragment"
         android:name="com.wavecat.mivlgu.fragment.ChatFragment"
-        android:label="@string/chat"
+        android:label="@string/ai"
         tools:layout="@layout/chat_fragment" />
 
 </navigation>

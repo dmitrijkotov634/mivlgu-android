@@ -90,9 +90,7 @@ class GroupFragment : Fragment() {
         binding.chipGroup.setOnCheckedStateChangeListener { group, _ ->
             requireActivity().invalidateMenu()
 
-            val index = group.indexOfChild(
-                group.findViewById<Chip>(group.checkedChipId)
-            )
+            val index = group.indexOfChild(group.findViewById<Chip>(group.checkedChipId))
 
             model.repository.facultyIndex = index
 
@@ -108,12 +106,12 @@ class GroupFragment : Fragment() {
             binding.groups.adapter = GroupAdapter(group.first) {
                 requireActivity().invalidateMenu()
 
-                val cacheKey = if (group.second == null) {
+                val (cacheKey, name) = if (group.second == null) {
                     model.selectGroup(group.first[it])
-                    group.first[it]
+                    group.first[it] to group.first[it]
                 } else {
                     model.selectTeacher(group.second!![it])
-                    group.second!![it].toString()
+                    group.second!![it].toString() to group.first[it]
                 }
 
                 val builder = NavOptions.Builder()
@@ -122,7 +120,8 @@ class GroupFragment : Fragment() {
 
                 findNavController().navigate(
                     R.id.TimetableFragment, bundleOf(
-                        TimetableFragment.CACHE_KEY to cacheKey
+                        TimetableFragment.CACHE_KEY_ARG to cacheKey,
+                        TimetableFragment.TIMETABLE_NAME_ARG to name
                     ), builder.build()
                 )
 

@@ -1,6 +1,5 @@
 package com.wavecat.mivlgu.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +8,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.data.Para
 import com.wavecat.mivlgu.data.WeekType
 import com.wavecat.mivlgu.databinding.DayHeaderBinding
 import com.wavecat.mivlgu.databinding.ItemLayoutBinding
@@ -18,27 +16,16 @@ import java.util.*
 
 
 class TimetableAdapter(
-    val context: Context,
+    private val context: Context,
     var items: List<TimetableItem>,
     private val currentWeek: Int?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val subgroup = context.getString(R.string.subgroup)
 
-    private val daysNames: Array<String> = context.resources.getStringArray(R.array.days)
-
-    private val time: Array<String> = context.resources.getStringArray(R.array.time)
-    private val klass: Array<String> = context.resources.getStringArray(R.array.klass)
-
-    interface TimetableItem
-
-    data class DayHeader(val title: Int) : TimetableItem
-
-    data class ParaHeader(val index: Int, val isToday: Boolean) : TimetableItem
-
-    data class ParaItem(
-        val para: Para,
-    ) : TimetableItem
+    private val daysNames = context.resources.getStringArray(R.array.days)
+    private val time = context.resources.getStringArray(R.array.time)
+    private val klass = context.resources.getStringArray(R.array.klass)
 
     class DayViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var binding = DayHeaderBinding.bind(view)
@@ -54,10 +41,9 @@ class TimetableAdapter(
 
     override fun getItemViewType(position: Int): Int =
         when (items[position]) {
-            is DayHeader -> DAY_HEADER
-            is ParaHeader -> KLASS_HEADER
-            is ParaItem -> ITEM_TYPE
-            else -> throw IllegalArgumentException()
+            is TimetableItem.DayHeader -> DAY_HEADER
+            is TimetableItem.ParaHeader -> KLASS_HEADER
+            is TimetableItem.ParaItem -> ITEM_TYPE
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
@@ -103,11 +89,7 @@ class TimetableAdapter(
             numberWeek
     }
 
-    private fun formatWeeks(
-        underGroup: String,
-        weekType: WeekType,
-        group: Int? = null
-    ): String =
+    private fun formatWeeks(underGroup: String, weekType: WeekType, group: Int? = null): String =
         underGroup
             .split(",")
             .joinToString(",") {
@@ -136,18 +118,17 @@ class TimetableAdapter(
                 }
             }
 
-    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val i = items[position]
 
         when (holder) {
             is DayViewHolder -> {
-                if (i is DayHeader)
-                    holder.binding.dayTitle.text = if (i.title == -1) "\n" else daysNames[i.title]
+                if (i is TimetableItem.DayHeader)
+                    holder.binding.dayTitle.text = daysNames[i.title]
             }
 
             is KlassViewHolder -> {
-                if (i is ParaHeader) {
+                if (i is TimetableItem.ParaHeader) {
                     holder.binding.klassTime.text = time[i.index]
                     holder.binding.klassTitle.text = klass[i.index]
 
@@ -164,7 +145,7 @@ class TimetableAdapter(
             }
 
             is ItemViewHolder -> {
-                if (i is ParaItem) {
+                if (i is TimetableItem.ParaItem) {
                     val underGroup = if (i.para.underGroup.isNullOrEmpty()) {
                         formatWeeks(i.para.numberWeek, i.para.typeWeek)
                     } else {
@@ -205,6 +186,9 @@ class TimetableAdapter(
 
                     holder.binding.itemType.setTextColor(onItemColor)
                     holder.binding.itemTitle.setTextColor(onItemColor)
+
+                    holder.binding.itemTitle.setTextIsSelectable(false)
+                    holder.binding.itemTitle.post { holder.binding.itemTitle.setTextIsSelectable(true) }
                 }
             }
         }

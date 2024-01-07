@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.chat.models.Message
+import com.wavecat.mivlgu.ai.models.Message
 import com.wavecat.mivlgu.databinding.ChatMessageBinding
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin

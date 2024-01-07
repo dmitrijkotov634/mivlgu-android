@@ -2,7 +2,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="#10A37F" />
+            <solid android:color="?colorPrimary" />
         </shape>
     </item>
     <item
@@ -12,6 +12,8 @@
         android:right="5dp"
         android:left="5dp"
         android:bottom="5dp">
-        <bitmap android:src="@drawable/openai" />
+        <bitmap
+            android:src="@drawable/openai"
+            android:tint="?colorOnPrimary" />
     </item>
 </layer-list>

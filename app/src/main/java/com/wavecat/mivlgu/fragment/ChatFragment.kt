@@ -21,9 +21,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.adapter.MessagesAdapter
-import com.wavecat.mivlgu.chat.ChatViewModel
+import com.wavecat.mivlgu.ai.ChatViewModel
+import com.wavecat.mivlgu.data.TimetableInfo
 import com.wavecat.mivlgu.databinding.ChatFragmentBinding
 import com.wavecat.mivlgu.databinding.MessageEditBinding
+import com.wavecat.mivlgu.getParcelableCompat
 import java.util.*
 
 class ChatFragment : Fragment(), RecognitionListener {
@@ -137,6 +139,11 @@ class ChatFragment : Fragment(), RecognitionListener {
             if (it) Snackbar.make(binding.root, R.string.no_internet, Snackbar.LENGTH_SHORT).show()
         }
 
+        model.timetableInfo.observe(viewLifecycleOwner) {
+            binding.timetableInfo.visibility = if (it.isNullOrEmpty()) View.GONE else View.VISIBLE
+            binding.timetableInfo.text = getString(R.string.based_on_timetable, it ?: return@observe)
+        }
+
         binding.messageInput.editText?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
@@ -151,6 +158,15 @@ class ChatFragment : Fragment(), RecognitionListener {
 
             override fun afterTextChanged(p0: Editable?) {}
         })
+
+        arguments?.let {
+            if (it.containsKey(TIMETABLE_INFO_ARG)) {
+                model.setupTimetableInfo(
+                    it.getString(TIMETABLE_NAME_ARG),
+                    it.getParcelableCompat<TimetableInfo>(TIMETABLE_INFO_ARG)
+                )
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -178,4 +194,9 @@ class ChatFragment : Fragment(), RecognitionListener {
     override fun onPartialResults(partialResults: Bundle?) {}
 
     override fun onEvent(eventType: Int, params: Bundle?) {}
+
+    companion object {
+        const val TIMETABLE_INFO_ARG = "timetable_info"
+        const val TIMETABLE_NAME_ARG = "timetable_name"
+    }
 }

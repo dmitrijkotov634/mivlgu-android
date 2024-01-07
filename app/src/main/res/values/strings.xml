@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Timetable</string>
     <string name="timetable">Timetable</string>
-    <string name="chat">Chat</string>
+    <string name="ai">AI</string>
 
     <string name="current_week">%1$d week of study</string>
     <string name="no_internet">No internet connection</string>
@@ -21,18 +21,22 @@
     <string name="search">Search</string>
     <string name="teacher">Teacher</string>
 
+    <string name="today">Today</string>
+    <string name="assistant_beta">Assistant (β)</string>
+
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
     <string name="github" translatable="false">GitHub</string>
     <string name="iep">IEP</string>
 
+    <string name="based_on_timetable">Timetable for %1$s. The function is a prototype. Answers are not guaranteed to be accurate.</string>
+
     <string name="message">Message</string>
     <string name="delete">Delete</string>
-    <string name="empty" translatable="false">¯\\_(ツ)_/¯</string>
     <string name="you">You</string>
     <string name="assistant">ChatGPT</string>
 
-    <string name="first_instruction"><big><big><b>ChatGPT</b></big></big><![CDATA[\n\n* May occasionally generate incorrect information\n* May occasionally produce harmful instructions or biased content\n* Limited knowledge of world and events after 2021]]></string>
+    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* May occasionally generate incorrect information\n* May occasionally produce harmful instructions or biased content\n* Limited knowledge of world and events after 2021]]></string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

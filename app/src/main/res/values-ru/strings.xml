@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Расписание</string>
     <string name="timetable">Расписание</string>
-    <string name="chat">Чат</string>
+    <string name="ai">ИИ</string>
 
     <string name="current_week">Идёт %1$d учебная неделя</string>
     <string name="no_internet">Нет интернет соединения</string>
@@ -17,16 +17,21 @@
     <string name="search">Поиск</string>
     <string name="teacher">Препод.</string>
 
+    <string name="today">Сегодня</string>
+    <string name="assistant_beta">Ассистент (β)</string>
+
     <string name="vkontakte">Вконтакте</string>
     <string name="telegram">Телеграм</string>
     <string name="iep">ИОП</string>
+
+    <string name="based_on_timetable">Расписание для %1$s. Функция является прототипом. Точность ответов не гарантируется.</string>
 
     <string name="message">Сообщение</string>
     <string name="delete">Удалить</string>
     <string name="you">Ты</string>
     <string name="assistant">ChatGPT</string>
 
-    <string name="first_instruction"><big><big><b>ChatGPT</b></big></big><![CDATA[\n\n* Иногда может генерировать неверную информацию\n* Иногда может создавать вредные инструкции или предвзятый контент\n* Ограниченные знания о мире и событиях после 2021 года]]></string>
+    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* Иногда может генерировать неверную информацию\n* Иногда может создавать вредные инструкции или предвзятый контент\n* Ограниченные знания о мире и событиях после 2021 года]]></string>
 
     <string-array name="days">
         <item>Понедельник</item>

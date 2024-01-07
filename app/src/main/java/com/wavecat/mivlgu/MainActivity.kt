@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         model.currentWeek.observe(this) {
-            binding.toolbar.subtitle = getString(R.string.current_week, it)
+            binding.toolbar.subtitle = if (it == null) "" else getString(R.string.current_week, it)
         }
     }
 

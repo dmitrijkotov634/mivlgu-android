@@ -10,6 +10,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class MainRepository(context: Context) {
+
     private val preferences: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -57,10 +58,10 @@ class MainRepository(context: Context) {
             apply()
         }
 
-    var lastWeekNumber: Int
-        get() = preferences.getInt(LAST_WEEK_NUMBER, 4)
+    var lastWeekNumber: Int?
+        get() = preferences.getInt(LAST_WEEK_NUMBER, -1).takeIf { it != -1 }
         set(value) = preferences.edit {
-            putInt(LAST_WEEK_NUMBER, value)
+            putInt(LAST_WEEK_NUMBER, value ?: -1)
             apply()
         }
 

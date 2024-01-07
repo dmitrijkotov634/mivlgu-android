@@ -3,7 +3,7 @@ package com.wavecat.mivlgu
 import android.app.Application
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
-import com.wavecat.mivlgu.adapter.TimetableAdapter
+import com.wavecat.mivlgu.adapter.TimetableItem
 import com.wavecat.mivlgu.data.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +19,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentTimetableError = MutableLiveData<TimetableError?>()
     private val _loadingException = MutableLiveData<Exception?>()
 
-    private val _currentWeek = MutableLiveData<Int>()
+    private val _currentWeek = MutableLiveData<Int?>()
 
     private val _currentGroupsList: MutableLiveData<Pair<List<String>, List<Int>?>> by lazy {
         MutableLiveData<Pair<List<String>, List<Int>?>>().also {
@@ -35,7 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val currentTimetableInfo: LiveData<TimetableInfo?> = _currentTimetableInfo
     val currentTimetableError: LiveData<TimetableError?> = _currentTimetableError
     val loadingException: LiveData<Exception?> = _loadingException
-    val currentWeek: LiveData<Int> = _currentWeek
+    val currentWeek: LiveData<Int?> = _currentWeek
     val currentGroupsList: LiveData<Pair<List<String>, List<Int>?>> = _currentGroupsList
 
     init {
@@ -49,14 +49,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-    data class TimetableInfo(
-        val timetable: List<TimetableAdapter.TimetableItem>,
-        val filteredTimetable: List<TimetableAdapter.TimetableItem>,
-        val isEven: Boolean,
-        val currentDayIndex: Int,
-        val currentWeek: Int?
-    )
 
     data class TimetableError(
         val title: String,
@@ -170,8 +162,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun restoreTimetableFromCache(cacheKey: String) {
-        _currentWeek.observeForever(object : Observer<Int> {
-            override fun onChanged(value: Int) {
+        _currentWeek.observeForever(object : Observer<Int?> {
+            override fun onChanged(value: Int?) {
                 repository.getGroupsCache(cacheKey).let {
                     _currentTimetableError.value = createTimetableError(it)
                     _currentTimetableInfo.value = createTimetableInfo(it)
@@ -201,35 +193,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         var dayIndex = 0
 
-        val list = mutableListOf<TimetableAdapter.TimetableItem>()
-        val filteredList = mutableListOf<TimetableAdapter.TimetableItem>()
+        val list = mutableListOf<TimetableItem>()
+        val filteredList = mutableListOf<TimetableItem>()
 
         val lastDay = if (data.disciplines.size > 1) data.disciplines.keys.last().toInt() else 1
-        val inverted = (Static.defaultWeek.indexOf(dayOfWeek) > lastDay - 1).apply {
-            if (this) isEven = !isEven
-        }
+        val inverted = (Static.defaultWeek.indexOf(dayOfWeek) > lastDay - 1)
+
+        if (inverted)
+            isEven = !isEven
 
         data.disciplines.forEach { day ->
             val index = day.key.toInt() - 1
 
-            val isToday = (Static.defaultWeek[index] == dayOfWeek).apply {
-                if (this) dayIndex = filteredList.size
-            }
+            val isToday = (Static.defaultWeek[index] == dayOfWeek)
 
-            val dayHeader = TimetableAdapter.DayHeader(index)
+            if (isToday)
+                dayIndex = filteredList.size
+
+            val dayHeader = TimetableItem.DayHeader(index)
             list.add(dayHeader)
             filteredList.add(dayHeader)
 
             day.value.forEach { klass ->
                 val paraHeader =
-                    TimetableAdapter.ParaHeader(klass.key.toInt() - 1, isToday)
+                    TimetableItem.ParaHeader(klass.key.toInt() - 1, isToday)
 
                 list.add(paraHeader)
                 filteredList.add(paraHeader)
 
                 klass.value.forEach { week ->
                     week.value.forEach {
-                        val item = TimetableAdapter.ParaItem(it)
+                        val item = TimetableItem.ParaItem(it)
                         list.add(item)
                         if ((isEven && it.typeWeek == WeekType.EVEN) ||
                             (!isEven && it.typeWeek == WeekType.ODD) ||
@@ -240,10 +234,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
-
-        val space = TimetableAdapter.DayHeader(-1)
-        filteredList.add(space)
-        list.add(space)
 
         return TimetableInfo(
             list,

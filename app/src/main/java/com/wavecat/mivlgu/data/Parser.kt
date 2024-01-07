@@ -37,7 +37,7 @@ class Parser(private val calendar: Calendar) {
         .parse()
         .getElementsByTag("b")
         .html()
-        .toInt()
+        .toIntOrNull()
 
     companion object {
         private const val BASE_URL = "https://www.mivlgu.ru/out-inf/scala"
