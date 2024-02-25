@@ -7,24 +7,24 @@
 
     <fragment
         android:id="@+id/GroupFragment"
-        android:name="com.wavecat.mivlgu.fragment.GroupFragment"
+        android:name="com.wavecat.mivlgu.ui.groups.GroupFragment"
         android:label="@string/timetable"
         tools:layout="@layout/group_fragment" />
 
     <fragment
-        android:id="@+id/InfoFragment"
-        android:name="com.wavecat.mivlgu.fragment.InfoFragment"
-        android:label="@string/info"
-        tools:layout="@layout/info_fragment" />
+        android:id="@+id/TimetableFragment"
+        android:name="com.wavecat.mivlgu.ui.timetable.TimetableFragment"
+        tools:layout="@layout/timetable_fragment" />
 
     <fragment
-        android:id="@+id/TimetableFragment"
-        android:name="com.wavecat.mivlgu.fragment.TimetableFragment"
-        tools:layout="@layout/info_fragment" />
+        android:id="@+id/SettingsFragment"
+        android:name="com.wavecat.mivlgu.ui.settings.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/settings_fragment" />
 
     <fragment
         android:id="@+id/ChatFragment"
-        android:name="com.wavecat.mivlgu.fragment.ChatFragment"
+        android:name="com.wavecat.mivlgu.ui.chat.ChatFragment"
         android:label="@string/ai"
         tools:layout="@layout/chat_fragment" />
 

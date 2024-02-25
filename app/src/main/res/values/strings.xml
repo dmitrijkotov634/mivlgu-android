@@ -2,6 +2,9 @@
     <string name="app_name">Timetable</string>
     <string name="timetable">Timetable</string>
     <string name="ai">AI</string>
+    <string name="info">Info</string>
+
+    <string name="settings">Settings</string>
 
     <string name="current_week">%1$d week of study</string>
     <string name="no_internet">No internet connection</string>
@@ -16,13 +19,13 @@
 
     <string name="even">Even</string>
     <string name="odd">Odd</string>
-    <string name="info">Info</string>
 
     <string name="search">Search</string>
     <string name="teacher">Teacher</string>
 
     <string name="today">Today</string>
-    <string name="assistant_beta">Assistant (β)</string>
+    <string name="shortcut">Shortcut</string>
+    <string name="assistant_beta">Assistant</string>
 
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
@@ -36,7 +39,25 @@
     <string name="you">You</string>
     <string name="assistant">ChatGPT</string>
 
-    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* May occasionally generate incorrect information\n* May occasionally produce harmful instructions or biased content\n* Limited knowledge of world and events after 2021]]></string>
+    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* May occasionally generate incorrect information\n* May occasionally produce harmful instructions or biased content\n* Limited knowledge of world and events after 2022]]></string>
+
+    <string name="notification_permission">Please grant Notification permission from App Settings</string>
+    <string name="notification_channel">Preload</string>
+
+    <string name="building">Building a Timetable Model…</string>
+    <string name="preload">Preload: %s</string>
+
+    <string name="preload_timetable">Preload timetable</string>
+    <string name="disable_filter">Disable filtering by parity of weeks</string>
+    <string name="disable_week_classes">Don\'t suggest classes this week</string>
+    <string name="show_prev_group">Display information about previous audience visitors</string>
+    <string name="show_teacher_path">Show teachers moving between buildings</string>
+    <string name="data_analytics">Data Analytics</string>
+    <string name="personalization">Personalization</string>
+    <string name="other">Other</string>
+    <string name="disable_iep">Disable IEP tab</string>
+    <string name="data_analytics_info">To use the analytics features, you must first download your entire class schedule, which will take approximately 5 minutes. To start downloading, click on the button below. Analytical data is generated only for the current school week indicated on the website. The loaded schedule of all groups may no longer be relevant over time</string>
+    <string name="about">Made with &lt;3. Dmitry Kotov 2024.</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

@@ -22,10 +22,10 @@ android {
 
     defaultConfig {
         applicationId = "com.wavecat.mivlgu"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
-        versionCode = 20
-        versionName = "1.6"
+        versionCode = 27
+        versionName = "1.8.1"
     }
 
     buildTypes {
@@ -64,12 +64,10 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("com.github.bumptech.glide:glide:4.15.1")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("org.jsoup:jsoup:1.15.4")
     implementation("androidx.preference:preference:1.2.1")
     implementation("io.ktor:ktor-client-core-jvm:2.3.6")
@@ -85,11 +83,13 @@ dependencies {
     implementation("io.noties.markwon:image:4.6.2")
     implementation("io.noties.markwon:linkify:4.6.2")
     implementation("io.noties.markwon:html:4.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-core-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
+    implementation("androidx.work:work-runtime:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     kapt("io.noties:prism4j-bundler:2.0.0")
     implementation("io.noties:prism4j:2.0.0")
     implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
-    implementation("com.google.firebase:firebase-analytics-ktx:21.5.0")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.6.0")
+    implementation("com.google.firebase:firebase-analytics-ktx:21.5.1")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.6.2")
     implementation("ru.rustore.sdk:remoteconfig:0.0.1")
 }

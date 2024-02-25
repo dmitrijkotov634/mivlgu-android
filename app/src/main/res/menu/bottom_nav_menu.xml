@@ -6,9 +6,9 @@
         android:title="@string/timetable" />
 
     <item
-        android:id="@+id/info"
+        android:id="@+id/iep"
         android:icon="@drawable/ic_baseline_info_24"
-        android:title="@string/info" />
+        android:title="@string/iep" />
 
     <item
         android:id="@+id/chat"

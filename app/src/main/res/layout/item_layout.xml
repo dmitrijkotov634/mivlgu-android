@@ -15,7 +15,7 @@
         android:textSize="@dimen/item_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/item_type"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/flow" />
 
     <TextView
         android:id="@+id/item_type"
@@ -23,10 +23,47 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:textAllCaps="true"
+        android:textIsSelectable="true"
         android:textSize="@dimen/item_size"
         android:textStyle="bold"
-        android:textIsSelectable="true"
         app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/flow" />
+
+    <TextView
+        android:id="@+id/extra_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/extra_data_chip"
+        android:backgroundTint="?colorPrimaryContainer"
+        android:textColor="?colorOnPrimaryContainer"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/extra_data1"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/extra_data1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/extra_data_chip"
+        android:backgroundTint="?colorErrorContainer"
+        android:textColor="?colorOnErrorContainer"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/extra_data"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/flow"
+        app:flow_horizontalGap="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:constraint_referenced_ids="extra_data,extra_data1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

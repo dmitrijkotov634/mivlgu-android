@@ -1,6 +1,6 @@
 package com.wavecat.mivlgu
 
-import com.wavecat.mivlgu.data.HttpClient
+import com.wavecat.mivlgu.client.HttpClient
 import kotlinx.coroutines.runBlocking
 
 

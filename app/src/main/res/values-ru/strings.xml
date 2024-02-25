@@ -3,6 +3,9 @@
     <string name="app_name">Расписание</string>
     <string name="timetable">Расписание</string>
     <string name="ai">ИИ</string>
+    <string name="info">Информация</string>
+
+    <string name="settings">Настройки</string>
 
     <string name="current_week">Идёт %1$d учебная неделя</string>
     <string name="no_internet">Нет интернет соединения</string>
@@ -12,13 +15,12 @@
     <string name="even">Чётные</string>
     <string name="odd">Нечётные</string>
 
-    <string name="info">Информация</string>
-
     <string name="search">Поиск</string>
     <string name="teacher">Препод.</string>
 
     <string name="today">Сегодня</string>
-    <string name="assistant_beta">Ассистент (β)</string>
+    <string name="shortcut">Ярлык</string>
+    <string name="assistant_beta">Ассистент</string>
 
     <string name="vkontakte">Вконтакте</string>
     <string name="telegram">Телеграм</string>
@@ -31,7 +33,25 @@
     <string name="you">Ты</string>
     <string name="assistant">ChatGPT</string>
 
-    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* Иногда может генерировать неверную информацию\n* Иногда может создавать вредные инструкции или предвзятый контент\n* Ограниченные знания о мире и событиях после 2021 года]]></string>
+    <string name="first_instruction"><big><b>ChatGPT</b></big><![CDATA[\n\n* Иногда может генерировать неверную информацию\n* Иногда может создавать вредные инструкции или предвзятый контент\n* Ограниченные знания о мире и событиях после 2022 года]]></string>
+
+    <string name="notification_permission">Предоставьте разрешение на уведомления в настройках приложения</string>
+    <string name="notification_channel">Предзагрузка</string>
+
+    <string name="building">Построение модели расписания…</string>
+    <string name="preload">Предзагрузка: %s</string>
+
+    <string name="preload_timetable">Предзагрузить расписание</string>
+    <string name="disable_filter">Отключить фильтрацию по четности недель</string>
+    <string name="disable_week_classes">Не подсказывать пары на текущей неделе</string>
+    <string name="show_prev_group">Отображать информацию о предудыщих посетителях аудитории</string>
+    <string name="show_teacher_path">Показывать перемещения преподавателей между корпусами</string>
+    <string name="data_analytics">Аналитика данных</string>
+    <string name="personalization">Персонализация</string>
+    <string name="other">Другое</string>
+    <string name="disable_iep">Отключить вкладку ИОП</string>
+    <string name="data_analytics_info">Чтобы использовать аналитические функции, необходимо предварительно загрузить всё расписание занятий, что займет примерно 5 минут. Для начала загрузки нажмите на кнопку ниже. Данные формируются только для текущей учебной недели. Загруженное расписание всех групп может перестать быть актуальным со временем</string>
+    <string name="about">Сделано с &lt;3. Дмитрий Котов 2024.</string>
 
     <string-array name="days">
         <item>Понедельник</item>
