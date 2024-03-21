@@ -79,6 +79,20 @@
             app:layout_constraintTop_toBottomOf="@+id/title3" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/disable_ai"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="24dp"
+            android:text="@string/disable_ai"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/disable_iep" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/show_teacher_path"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -103,7 +117,7 @@
             android:textColor="?colorPrimary"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/disable_iep" />
+            app:layout_constraintTop_toBottomOf="@+id/disable_ai" />
 
         <TextView
             android:id="@+id/title3"
@@ -157,32 +171,33 @@
             app:layout_constraintTop_toBottomOf="@+id/preload" />
 
         <Button
-            android:id="@+id/github"
+            android:id="@+id/vk"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="32dp"
-            android:drawableLeft="@drawable/ic_octocat"
+            android:drawableLeft="@drawable/ic_vk"
             android:drawableTint="?android:colorBackground"
-            android:text="@string/github"
+            android:text="@string/vkontakte"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/about"
             tools:ignore="RtlHardcoded" />
 
         <Button
-            android:id="@+id/vk"
+            android:id="@+id/github"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="32dp"
-            android:drawableLeft="@drawable/ic_vk"
+            android:drawableLeft="@drawable/ic_octocat"
             android:drawableTint="?android:colorBackground"
-            android:text="@string/vkontakte"
+            android:text="@string/github"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/github"
+            app:layout_constraintStart_toEndOf="@+id/vk"
             app:layout_constraintTop_toBottomOf="@+id/about"
             tools:ignore="RtlHardcoded" />
 

@@ -18,6 +18,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _showPrevGroups = MutableLiveData(repository.showPrevGroup)
     val showPrevGroups: LiveData<Boolean> = _showPrevGroups
 
+    private val _useAnalyticsFunctions = MutableLiveData(repository.useAnalyticsFunctions)
+    val useAnalyticsFunctions: LiveData<Boolean> = _useAnalyticsFunctions
+
+    fun showAnalyticsFunctions() {
+        _useAnalyticsFunctions.value = true
+    }
+
     fun changeShowPrevGroups(state: Boolean) {
         if (state) buildModel()
         _showPrevGroups.value = state
@@ -55,6 +62,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun changeDisableIEP(state: Boolean) {
         _disableIEP.value = state
         repository.disableIEP = state
+    }
+
+    private val _disableAI = MutableLiveData(repository.disableAI)
+    val disableAI: LiveData<Boolean> = _disableAI
+
+    fun changeDisableAI(state: Boolean) {
+        _disableAI.value = state
+        repository.disableAI = state
     }
 
     private fun buildModel() {

@@ -60,11 +60,18 @@ class SettingsFragment : Fragment() {
             binding.disableIep.setOnCheckedChangeListener { _, isChecked ->
                 model.changeDisableIEP(isChecked)
                 (requireActivity() as MainActivity).invalidateNavMenu()
-                binding.disableIep.isEnabled = false
-                lifecycleScope.launch {
-                    delay(500)
-                    binding.disableIep.isEnabled = true
-                }
+                onNavMenuChanged()
+            }
+        }
+
+        model.disableAI.observe(viewLifecycleOwner) {
+            binding.disableAi.setOnCheckedChangeListener(null)
+            binding.disableAi.isChecked = it
+            binding.disableAi.setOnCheckedChangeListener { _, isChecked ->
+                if (!isChecked) openUrl(TERMS_OF_USE)
+                model.changeDisableAI(isChecked)
+                (requireActivity() as MainActivity).invalidateNavMenu()
+                onNavMenuChanged()
             }
         }
 
@@ -84,14 +91,27 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        model.useAnalyticsFunctions.observe(viewLifecycleOwner) {
+            val visibility = if (it) View.VISIBLE else View.GONE
+            binding.title2.visibility = visibility
+            binding.analysisInfo.visibility = visibility
+            binding.showPrevGroup.visibility = visibility
+            binding.showTeacherPath.visibility = visibility
+            binding.preload.visibility = visibility
+        }
+
         binding.github.setOnClickListener { openUrl(GITHUB) }
         binding.vk.setOnClickListener { openUrl(VK) }
 
         binding.about.setOnClickListener(object : View.OnClickListener {
             var clicks = 0
+
             override fun onClick(v: View?) {
-                if (clicks++ < 4) return
+                if (clicks++ < 7) return
+
                 model.generateEasterEgg()
+                model.showAnalyticsFunctions()
+
                 startActivity(
                     Intent(
                         requireContext(),
@@ -105,9 +125,20 @@ class SettingsFragment : Fragment() {
         })
     }
 
-    private fun openUrl(url: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    private fun onNavMenuChanged() = binding.run {
+        disableAi.isEnabled = false
+        disableIep.isEnabled = false
+
+        lifecycleScope.launch {
+            delay(500)
+
+            disableAi.isEnabled = true
+            disableIep.isEnabled = true
+        }
     }
+
+    private fun openUrl(url: String) =
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -115,6 +146,7 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
+        const val TERMS_OF_USE = "https://telegra.ph/Polzovatelskoe-soglashenie-03-05-4"
         const val GITHUB = "https://github.com/dmitrijkotov634/mivlgu-android"
         const val VK = "https://vk.com/bomb3r"
     }

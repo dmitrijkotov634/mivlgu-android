@@ -201,7 +201,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             data.title,
             data.message
         )
-            .takeIf { data.status != Status.ERROR }
+            .takeIf { data.status == Status.ERROR }
 
     private fun createTimetableInfo(data: ScheduleGetResult, cache: ScheduleGetResult? = null): TimetableInfo {
         val calendar = Calendar.getInstance().apply {

@@ -23,6 +23,7 @@ import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.databinding.GroupFragmentBinding
 import com.wavecat.mivlgu.ui.MainActivity
 import com.wavecat.mivlgu.ui.MainViewModel
+import com.wavecat.mivlgu.ui.sendFeedback
 import com.wavecat.mivlgu.ui.timetable.TimetableFragment
 
 
@@ -94,12 +95,11 @@ class GroupFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == android.R.id.home)
-                    findNavController().navigateUp()
-                else if (menuItem.itemId == R.id.settings)
-                    findNavController().navigate(
-                        R.id.SettingsFragment, null, navOptions.build()
-                    )
+                when (menuItem.itemId) {
+                    android.R.id.home -> findNavController().navigateUp()
+                    R.id.settings -> findNavController().navigate(R.id.SettingsFragment, null, navOptions.build())
+                    R.id.feedback -> sendFeedback(requireContext())
+                }
 
                 return true
             }

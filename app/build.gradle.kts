@@ -24,8 +24,8 @@ android {
         applicationId = "com.wavecat.mivlgu"
         minSdk = 25
         targetSdk = 34
-        versionCode = 27
-        versionName = "1.8.1"
+        versionCode = 31
+        versionName = "1.9"
     }
 
     buildTypes {

@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.client.WeekType
 import com.wavecat.mivlgu.databinding.TimetableFragmentBinding
@@ -23,6 +24,7 @@ import com.wavecat.mivlgu.ui.MainActivity
 import com.wavecat.mivlgu.ui.MainViewModel
 import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.ui.chat.ChatFragment
+import com.wavecat.mivlgu.ui.sendFeedback
 
 
 class TimetableFragment : Fragment() {
@@ -32,6 +34,8 @@ class TimetableFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val model by activityViewModels<MainViewModel>()
+
+    private val repository by lazy { MainRepository(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,67 +63,74 @@ class TimetableFragment : Fragment() {
 
                 if (!ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext()))
                     menu.removeItem(R.id.shortcut)
+
+                if (repository.disableAI)
+                    menu.removeItem(R.id.chat)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == R.id.select)
-                    info?.let { loadTimetableInfo(it) }
+                when (menuItem.itemId) {
+                    R.id.select -> info?.let {
+                        loadTimetableInfo(it)
+                    }
 
-                if (menuItem.itemId == R.id.shortcut) {
-                    val cacheKey = requireArguments().getString(CACHE_KEY_ARG)
+                    R.id.shortcut -> {
+                        val cacheKey = requireArguments().getString(CACHE_KEY_ARG)
 
-                    val pinShortcutInfo =
-                        ShortcutInfoCompat.Builder(requireContext(), cacheKey.toString())
-                            .setIntent(
-                                Intent(
-                                    requireContext(),
-                                    MainActivity::class.java
+                        val pinShortcutInfo =
+                            ShortcutInfoCompat.Builder(requireContext(), cacheKey.toString())
+                                .setIntent(
+                                    Intent(
+                                        requireContext(),
+                                        MainActivity::class.java
+                                    )
+                                        .setAction(Intent.ACTION_VIEW)
+                                        .putExtra(TIMETABLE_NAME_ARG, timetableName)
+                                        .putExtra(CACHE_KEY_ARG, cacheKey)
                                 )
-                                    .setAction(Intent.ACTION_VIEW)
-                                    .putExtra(TIMETABLE_NAME_ARG, timetableName)
-                                    .putExtra(CACHE_KEY_ARG, cacheKey)
-                            )
-                            .setShortLabel(timetableName.toString())
-                            .setIcon(
-                                IconCompat.createWithResource(
-                                    requireContext(),
-                                    R.drawable.ic_baseline_schedule_24
+                                .setShortLabel(timetableName.toString())
+                                .setIcon(
+                                    IconCompat.createWithResource(
+                                        requireContext(),
+                                        R.drawable.ic_baseline_schedule_24
+                                    )
                                 )
-                            )
-                            .build()
+                                .build()
 
-                    val pinnedShortcutCallbackIntent =
-                        ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo)
+                        val pinnedShortcutCallbackIntent =
+                            ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo)
 
-                    val successCallback = PendingIntent.getBroadcast(
-                        requireContext(), 0,
-                        pinnedShortcutCallbackIntent, PendingIntent.FLAG_IMMUTABLE
-                    )
+                        val successCallback = PendingIntent.getBroadcast(
+                            requireContext(), 0,
+                            pinnedShortcutCallbackIntent, PendingIntent.FLAG_IMMUTABLE
+                        )
 
-                    ShortcutManagerCompat.requestPinShortcut(
-                        requireContext(),
-                        pinShortcutInfo,
-                        successCallback.intentSender
-                    )
-                }
-
-                if (menuItem.itemId == R.id.chat) {
-                    val navOptions = NavOptions.Builder()
-                        .setEnterAnim(androidx.appcompat.R.anim.abc_fade_in)
-                        .setExitAnim(androidx.appcompat.R.anim.abc_fade_out)
-
-                    info?.let {
-                        findNavController().navigate(
-                            R.id.ChatFragment, bundleOf(
-                                ChatFragment.TIMETABLE_NAME_ARG to timetableName,
-                                ChatFragment.TIMETABLE_INFO_ARG to info
-                            ), navOptions.build()
+                        ShortcutManagerCompat.requestPinShortcut(
+                            requireContext(),
+                            pinShortcutInfo,
+                            successCallback.intentSender
                         )
                     }
-                }
 
-                if (menuItem.itemId == android.R.id.home)
-                    findNavController().navigateUp()
+                    R.id.chat -> {
+                        val navOptions = NavOptions.Builder()
+                            .setEnterAnim(androidx.appcompat.R.anim.abc_fade_in)
+                            .setExitAnim(androidx.appcompat.R.anim.abc_fade_out)
+
+                        info?.let {
+                            findNavController().navigate(
+                                R.id.ChatFragment, bundleOf(
+                                    ChatFragment.TIMETABLE_NAME_ARG to timetableName,
+                                    ChatFragment.TIMETABLE_INFO_ARG to info
+                                ), navOptions.build()
+                            )
+                        }
+                    }
+
+                    R.id.feedback -> sendFeedback(requireContext())
+
+                    android.R.id.home -> findNavController().navigateUp()
+                }
 
                 return true
             }

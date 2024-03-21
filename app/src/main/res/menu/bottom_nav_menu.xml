@@ -14,4 +14,9 @@
         android:id="@+id/chat"
         android:icon="@drawable/ic_baseline_chat_24"
         android:title="@string/ai" />
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/settings" />
 </menu>

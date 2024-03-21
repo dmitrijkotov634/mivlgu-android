@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.TimetableFragment, intent.extras, navOptions.build())
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && repository.useAnalyticsFunctions) {
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { result: Boolean? ->
                 if (!result!!) {
                     Snackbar.make(
@@ -99,17 +99,25 @@ class MainActivity : AppCompatActivity() {
     fun invalidateNavMenu() {
         binding.included.navView.menu.clear()
         binding.included.navView.inflateMenu(R.menu.bottom_nav_menu)
+
         removeDisabledMenuItems()
     }
 
     private fun removeDisabledMenuItems() {
         if (repository.disableIEP)
             binding.included.navView.menu.removeItem(R.id.iep)
+
+        if (repository.disableAI)
+            binding.included.navView.menu.removeItem(R.id.chat)
+
+        if (!repository.disableAI || !repository.disableIEP)
+            binding.included.navView.menu.removeItem(R.id.settings)
     }
 
     private fun getMenu(id: Int) = when (id) {
         R.id.timetable -> R.id.GroupFragment
         R.id.chat -> R.id.ChatFragment
+        R.id.settings -> R.id.SettingsFragment
         else -> R.id.GroupFragment
     }
 

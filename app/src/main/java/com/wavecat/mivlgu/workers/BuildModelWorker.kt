@@ -141,7 +141,7 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
         currentWeek: Int
     ): Boolean {
         val parts = numberWeek
-            .split("-")
+            .split("-", "/")
             .map { it.toInt() }
 
         val weekStart = parts[0]
@@ -161,8 +161,8 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
         weekType: WeekType,
         currentWeek: Int
     ): Boolean {
-        for (part in underGroup.split(",", "/")) {
-            if (part.contains("-") &&
+        for (part in underGroup.split(",")) {
+            if ((part.contains("-") || part.contains("/")) &&
                 checkRange(part, weekType, currentWeek)
             )
                 return true

@@ -70,6 +70,13 @@ class MainRepository(context: Context) {
             apply()
         }
 
+    var disableAI: Boolean
+        get() = preferences.getBoolean(DISABLE_AI, true)
+        set(value) = preferences.edit {
+            putBoolean(DISABLE_AI, value)
+            apply()
+        }
+
     var disableWeekClasses: Boolean
         get() = preferences.getBoolean(DISABLE_WEEK_CLASSES, false)
         set(value) = preferences.edit {
@@ -101,23 +108,19 @@ class MainRepository(context: Context) {
     val useAnalyticsFunctions: Boolean
         get() = showPrevGroup || showTeacherPath
 
-    fun saveFacultyCache(facultyId: Int, data: List<String>) {
-        facultyCache.edit {
-            putString(facultyId.toString(), Json.encodeToString(data))
-            apply()
-        }
+    fun saveFacultyCache(facultyId: Int, data: List<String>) = facultyCache.edit {
+        putString(facultyId.toString(), Json.encodeToString(data))
+        apply()
     }
 
-    fun loadFacultyCache(facultyId: Int): List<String> {
-        return Json.decodeFromString(facultyCache.getString(facultyId.toString(), "[]")!!)
-    }
+    fun loadFacultyCache(facultyId: Int): List<String> =
+        Json.decodeFromString(facultyCache.getString(facultyId.toString(), "[]")!!)
 
-    fun saveTimetableCache(name: String, data: ScheduleGetResult) {
+    fun saveTimetableCache(name: String, data: ScheduleGetResult) =
         timetableCache.edit {
             putString(name, Json.encodeToString(data))
             apply()
         }
-    }
 
     fun getAllCachedGroups() = buildList {
         Static.facultiesIds.forEach { id ->
@@ -140,6 +143,7 @@ class MainRepository(context: Context) {
         const val VERSION = "version"
 
         const val DISABLE_FILTER = "disable_filter"
+        const val DISABLE_AI = "disable_ai"
         const val DISABLE_WEEK_CLASSES = "disable_week_classes"
         const val DISABLE_IEP = "disable_iep"
 

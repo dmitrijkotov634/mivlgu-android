@@ -72,7 +72,7 @@ class TimetableAdapter(
             return numberWeek
 
         val parts = numberWeek
-            .split("-")
+            .split("-", "/")
             .map { it.toInt() }
 
         val weekStart = parts[0]
@@ -104,10 +104,10 @@ class TimetableAdapter(
 
     private fun formatWeeks(underGroup: String, weekType: WeekType, group: Int? = null): String =
         underGroup
-            .split(",", "/")
+            .split(",")
             .joinToString(",") {
                 it.let { week ->
-                    if (week.contains("-"))
+                    if (week.contains("-") || week.contains("/"))
                         formatRange(week, weekType, group)
                     else
                         when (week.toIntOrNull()) {
