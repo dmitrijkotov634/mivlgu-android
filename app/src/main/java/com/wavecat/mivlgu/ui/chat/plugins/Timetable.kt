@@ -3,12 +3,12 @@
 package com.wavecat.mivlgu.ui.chat.plugins
 
 import android.app.Application
+import com.wavecat.mivlgu.Constant
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.ui.timetable.TimetableItem
-import com.wavecat.mivlgu.ui.chat.models.Message
-import com.wavecat.mivlgu.client.Static
+import com.wavecat.mivlgu.client.models.WeekType
 import com.wavecat.mivlgu.ui.TimetableInfo
-import com.wavecat.mivlgu.client.WeekType
+import com.wavecat.mivlgu.ui.chat.models.Message
+import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import java.util.*
 
 class Timetable(
@@ -38,7 +38,7 @@ class Timetable(
             append("Идёт $it учебная неделя")
         }
 
-        val dayOfWeek = Static.defaultWeek.indexOf(
+        val dayOfWeek = Constant.defaultWeek.indexOf(
             Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
         )
 
@@ -100,6 +100,8 @@ class Timetable(
 
                     append("\n")
                 }
+
+                is TimetableItem.Warning -> {}
             }
         }
     }

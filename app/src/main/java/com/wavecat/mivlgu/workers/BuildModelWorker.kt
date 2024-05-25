@@ -15,9 +15,8 @@ import androidx.work.WorkerParameters
 import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.ParaExtraData
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.client.Para
 import com.wavecat.mivlgu.client.ScheduleGetResult
-import com.wavecat.mivlgu.client.WeekType
+import com.wavecat.mivlgu.client.models.Para
 
 class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -65,6 +64,8 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
         for ((name, timetable) in data) {
             if (timetable == MainRepository.emptyScheduleGetResult)
                 continue
+
+            println("Build model for $name")
 
             for (day in timetable.disciplines)
                 for (classes in day.value)
@@ -135,54 +136,14 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
         return null
     }
 
-    private fun checkRange(
-        numberWeek: String,
-        weekType: WeekType,
-        currentWeek: Int
-    ): Boolean {
-        val parts = numberWeek
-            .split("-", "/")
-            .map { it.toInt() }
-
-        val weekStart = parts[0]
-        val weekEnd = parts[1]
-
-        val isEven = currentWeek % 2 == 0
-
-        return (currentWeek in weekStart..weekEnd &&
-                (weekType == WeekType.ALL ||
-                        (isEven && weekType == WeekType.EVEN) ||
-                        (!isEven && weekType == WeekType.ODD))
-                )
-    }
-
-    private fun checkWeeks(
-        underGroup: String,
-        weekType: WeekType,
-        currentWeek: Int
-    ): Boolean {
-        for (part in underGroup.split(",")) {
-            if ((part.contains("-") || part.contains("/")) &&
-                checkRange(part, weekType, currentWeek)
-            )
-                return true
-            else if (part.toIntOrNull() == currentWeek)
-                return true
-        }
-
-        return false
-    }
-
     private fun checkPara(para: Para, currentWeek: Int): Boolean =
         if (para.underGroup.isNullOrEmpty())
-            checkWeeks(para.numberWeek, para.typeWeek, currentWeek)
+            para.numberWeekParsed.isToday(para.typeWeek, currentWeek)
         else
-            ((!para.underGroup1.isNullOrEmpty() && checkWeeks(
-                para.underGroup1,
+            ((!para.underGroup1.isNullOrEmpty() && para.underGroup1Parsed.isToday(
                 para.typeWeek,
                 currentWeek
-            )) || (!para.underGroup2.isNullOrEmpty() && checkWeeks(
-                para.underGroup2,
+            )) || (!para.underGroup2.isNullOrEmpty() && para.underGroup2Parsed.isToday(
                 para.typeWeek,
                 currentWeek
             )))

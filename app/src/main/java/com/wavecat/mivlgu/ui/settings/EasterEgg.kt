@@ -2,10 +2,10 @@
 
 package com.wavecat.mivlgu.ui.settings
 
-import com.wavecat.mivlgu.client.Para
 import com.wavecat.mivlgu.client.ScheduleGetResult
-import com.wavecat.mivlgu.client.Status
-import com.wavecat.mivlgu.client.WeekType
+import com.wavecat.mivlgu.client.models.Para
+import com.wavecat.mivlgu.client.models.Status
+import com.wavecat.mivlgu.client.models.WeekType
 
 object EasterEgg {
 
@@ -34,8 +34,8 @@ object EasterEgg {
         "0,1-52",
         "0,1-5,6,7-52",
         "0-52",
-        "1/2/3/4-51/52",
-        "1/0-52",
+        "1,2,3,4-51,52",
+        "1,0-52",
         "0,1-51,52"
     )
 
@@ -64,12 +64,12 @@ object EasterEgg {
     )
 
     private fun generateDay(day: Int) = buildMap {
-        repeat(6) { klass ->
+        repeat(7) { klass ->
             val index = klass + 1
             put(index.toString(), generateClasses(day, index))
         }
 
-        put("7", generateClasses(day, 7, true))
+        put("8", generateClasses(day, 7, true))
     }
 
     fun generate() = ScheduleGetResult(
@@ -82,7 +82,7 @@ object EasterEgg {
         semestr = "",
         year = "",
         disciplines = buildMap {
-            repeat(7) { day ->
+            repeat(8) { day ->
                 val index = day + 1
                 put(index.toString(), generateDay(index))
             }

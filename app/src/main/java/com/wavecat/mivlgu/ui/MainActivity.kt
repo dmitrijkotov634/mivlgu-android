@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.databinding.ActivityMainBinding
+import com.wavecat.mivlgu.ui.chat.ChatFragment
 import com.wavecat.mivlgu.ui.timetable.TimetableFragment
 import java.io.IOException
 
@@ -57,24 +59,29 @@ class MainActivity : AppCompatActivity() {
         binding.included.navView.setOnItemSelectedListener {
             if (it.itemId == R.id.iep) {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(IEP)))
+                false
             } else {
                 navController.popBackStack()
                 navController.navigate(getMenu(it.itemId), null, navOptions.build())
+                true
             }
-
-            true
         }
 
         model.loadingException.observe(this) {
-            if (it != null)
-                when (it) {
-                    is IOException -> Snackbar.make(binding.root, R.string.no_internet, Snackbar.LENGTH_SHORT).show()
-                    else -> binding.toolbar.subtitle = it.message
-                }
+            when (it) {
+                null -> {}
+                is IOException -> Snackbar.make(binding.root, R.string.no_internet, Snackbar.LENGTH_SHORT).show()
+                else -> binding.toolbar.subtitle = it.message
+            }
         }
 
         model.currentWeek.observe(this) {
             binding.toolbar.subtitle = if (it == null) "" else getString(R.string.current_week, it)
+        }
+
+        if (intent.getBooleanExtra(ChatFragment.OPEN_AI_CHAT_ARG, false)) {
+            navController.popBackStack()
+            navController.navigate(R.id.ChatFragment, intent.extras, navOptions.build())
         }
 
         intent.getStringExtra(TimetableFragment.CACHE_KEY_ARG)?.let {
@@ -104,20 +111,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun removeDisabledMenuItems() {
+        binding.included.navView.visibility =
+            if (repository.disableAI && repository.disableIEP) View.GONE else View.VISIBLE
+
+        WindowCompat.setDecorFitsSystemWindows(window, repository.disableAI && repository.disableIEP)
+
         if (repository.disableIEP)
             binding.included.navView.menu.removeItem(R.id.iep)
 
         if (repository.disableAI)
             binding.included.navView.menu.removeItem(R.id.chat)
-
-        if (!repository.disableAI || !repository.disableIEP)
-            binding.included.navView.menu.removeItem(R.id.settings)
     }
 
     private fun getMenu(id: Int) = when (id) {
         R.id.timetable -> R.id.GroupFragment
         R.id.chat -> R.id.ChatFragment
-        R.id.settings -> R.id.SettingsFragment
         else -> R.id.GroupFragment
     }
 

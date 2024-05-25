@@ -6,8 +6,12 @@ import androidx.lifecycle.Observer
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import com.wavecat.mivlgu.Constant
 import com.wavecat.mivlgu.MainRepository
-import com.wavecat.mivlgu.client.*
+import com.wavecat.mivlgu.client.HttpClient
+import com.wavecat.mivlgu.client.Parser
+import com.wavecat.mivlgu.client.ScheduleGetResult
+import com.wavecat.mivlgu.client.models.Status
 import com.wavecat.mivlgu.ui.settings.SettingsViewModel
 import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import com.wavecat.mivlgu.workers.BuildModelWorker
@@ -43,8 +47,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         MutableLiveData<Pair<List<String>, List<Int>?>>().also {
             if (repository.facultyIndex != TEACHER_INDEX)
                 selectFaculty(repository.facultyIndex)
-            else if (!repository.teacherFio.isNullOrEmpty())
-                selectTeacher(repository.teacherFio!!)
+            else if (repository.teacherFio.isNotEmpty())
+                selectTeacher(repository.teacherFio)
         }
     }
 
@@ -104,7 +108,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.postValue(true)
 
-            val id = Static.facultiesIds[index]
+            val id = Constant.facultiesIds[index]
 
             handleException(true) {
                 _currentGroupsList.postValue(repository.loadFacultyCache(id) to null)
@@ -113,7 +117,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val calendar = Calendar.getInstance()
 
             handleException {
-                val data = parser.pickGroups(id, Static.getSemester(calendar), Static.getYear(calendar))
+                val data = parser.pickGroups(id, Constant.getSemester(calendar), Constant.getYear(calendar))
                 _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(id, data)
             }
@@ -140,8 +144,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             handleException {
                 httpClient.scheduleGetJson(
                     group,
-                    Static.getSemester(calendar),
-                    Static.getYear(calendar)
+                    Constant.getSemester(calendar),
+                    Constant.getYear(calendar)
                 ).let {
                     _currentTimetableError.postValue(createTimetableError(it))
                     _currentTimetableInfo.postValue(createTimetableInfo(it, cache))
@@ -169,8 +173,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 httpClient.scheduleGetTeacherJson(
                     teacherId,
-                    Static.getSemester(calendar),
-                    Static.getYear(calendar)
+                    Constant.getSemester(calendar),
+                    Constant.getYear(calendar)
                 ).let {
                     _currentTimetableError.postValue(createTimetableError(it))
                     _currentTimetableInfo.postValue(createTimetableInfo(it))
@@ -208,15 +212,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             firstDayOfWeek = Calendar.MONDAY
         }
 
-        var isEven = (_currentWeek.value ?: calendar.get(Calendar.WEEK_OF_YEAR)) % 2 == 0
+        val currentWeek = _currentWeek.value ?: calendar.get(Calendar.WEEK_OF_YEAR)
+        var isEven = currentWeek % 2 == 0
 
         var todayIndex = 0
 
         val list = mutableListOf<TimetableItem>()
-        val filteredList = mutableListOf<TimetableItem>()
 
-        val lastDay = if (data.disciplines.size > 1) data.disciplines.keys.last().toInt() else 1
-        val inverted = Static.defaultWeek.indexOf(calendar.get(Calendar.DAY_OF_WEEK)) > lastDay - 1
+        val lastDay = if (data.disciplines.size > 1) {
+            data.disciplines.keys.last().toInt()
+        } else {
+            1
+        }
+
+        val inverted = Constant.defaultWeek.indexOf(calendar.get(Calendar.DAY_OF_WEEK)) > lastDay - 1
 
         if (inverted)
             isEven = !isEven
@@ -226,25 +235,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val disableFilter = repository.disableFilter
         var useAnalyticsFunctions = repository.useAnalyticsFunctions
 
+        var warningShowed = false
+
         for (day in data.disciplines) {
             val dayIndex = day.key.toInt() - 1
 
-            val isToday = Static.defaultWeek[dayIndex] == calendar.get(Calendar.DAY_OF_WEEK)
+            val isToday = Constant.defaultWeek.getOrNull(dayIndex) == calendar.get(Calendar.DAY_OF_WEEK)
 
-            if (isToday)
-                todayIndex = if (disableFilter)
-                    list.size
-                else
-                    filteredList.size
+            list.add(TimetableItem.DayHeader(dayIndex))
 
-            TimetableItem.DayHeader(dayIndex)
-                .also(filteredList::add)
-                .also(list::add)
+            if ((isToday || inverted) && !warningShowed) {
+                todayIndex = dayIndex
+
+                if (_currentWeek.value == null)
+                    list.add(TimetableItem.Warning.CURRENT_WEEK_NULL)
+
+                warningShowed = true
+            }
 
             for (klass in day.value) {
-                TimetableItem.ParaHeader(klass.key.toInt() - 1, isToday)
-                    .also(filteredList::add)
-                    .also(list::add)
+                list.add(TimetableItem.ParaHeader(klass.key.toInt() - 1, isToday))
 
                 for (week in klass.value) {
                     for ((index, para) in week.value.withIndex()) {
@@ -271,26 +281,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         val item = TimetableItem.ParaItem(para)
 
                         list.add(item)
-
-                        if (!disableFilter &&
-                            ((isEven && para.typeWeek == WeekType.EVEN)
-                                    || (!isEven && para.typeWeek == WeekType.ODD)
-                                    || para.typeWeek == WeekType.ALL)
-                        )
-                            filteredList.add(item)
                     }
                 }
             }
         }
 
+        val weekValue = _currentWeek.value?.plus(if (inverted) 1 else 0)
+
+        val startDate = if (weekValue != null) {
+            Calendar.getInstance().apply {
+                firstDayOfWeek = Calendar.MONDAY
+                set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                add(Calendar.WEEK_OF_YEAR, -weekValue + 1)
+            }
+        } else null
+
         return TimetableInfo(
             timetable = list,
-            filteredTimetable = filteredList,
             isEven = isEven,
             todayIndex = todayIndex,
-            currentWeek = _currentWeek.value?.plus(if (inverted) 1 else 0),
+            currentWeek = weekValue,
             disableFilter = disableFilter,
-            disableWeekClasses = repository.disableWeekClasses
+            disableWeekClasses = repository.disableWeekClasses,
+            startDate = startDate
         )
     }
 

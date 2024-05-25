@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -90,6 +89,7 @@ class GroupFragment : Fragment() {
                         override fun onQueryTextChange(newText: String?): Boolean = true
                     })
 
+                    queryHint = getString(R.string.search_hint)
                     clearFocus()
                 }
             }
@@ -98,7 +98,7 @@ class GroupFragment : Fragment() {
                 when (menuItem.itemId) {
                     android.R.id.home -> findNavController().navigateUp()
                     R.id.settings -> findNavController().navigate(R.id.SettingsFragment, null, navOptions.build())
-                    R.id.feedback -> sendFeedback(requireContext())
+                    R.id.feedback -> sendFeedback(getString(R.string.app_name))
                 }
 
                 return true
@@ -135,10 +135,10 @@ class GroupFragment : Fragment() {
                 }
 
                 findNavController().navigate(
-                    R.id.TimetableFragment, bundleOf(
-                        TimetableFragment.CACHE_KEY_ARG to cacheKey,
-                        TimetableFragment.TIMETABLE_NAME_ARG to name
-                    ), navOptions.build()
+                    GroupFragmentDirections.actionGroupFragmentToTimetableFragment(
+                        name,
+                        cacheKey
+                    )
                 )
 
                 val imm: InputMethodManager? =

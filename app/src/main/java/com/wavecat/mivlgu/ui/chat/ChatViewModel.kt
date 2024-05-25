@@ -198,6 +198,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        const val MAX_TOKENS = 3096
+        const val MAX_TOKENS = 5000
     }
 }

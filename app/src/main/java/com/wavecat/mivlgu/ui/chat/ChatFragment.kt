@@ -2,6 +2,7 @@ package com.wavecat.mivlgu.ui.chat
 
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -10,20 +11,26 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.databinding.ChatFragmentBinding
 import com.wavecat.mivlgu.databinding.MessageEditBinding
 import com.wavecat.mivlgu.getParcelableCompat
+import com.wavecat.mivlgu.ui.MainActivity
+import com.wavecat.mivlgu.ui.TimetableInfo
+import com.wavecat.mivlgu.ui.sendFeedback
 import java.util.*
 
 class ChatFragment : Fragment(), RecognitionListener {
@@ -43,9 +50,62 @@ class ChatFragment : Fragment(), RecognitionListener {
         return binding.root
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val menuProvider = object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.chat_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    android.R.id.home -> findNavController().navigateUp()
+
+                    R.id.shortcut -> {
+                        val pinShortcutInfo =
+                            ShortcutInfoCompat.Builder(requireContext(), "chat")
+                                .setIntent(
+                                    Intent(
+                                        requireContext(),
+                                        MainActivity::class.java
+                                    )
+                                        .setAction(Intent.ACTION_VIEW)
+                                        .putExtra(OPEN_AI_CHAT_ARG, true)
+                                )
+                                .setShortLabel(getString(R.string.ai))
+                                .setIcon(
+                                    IconCompat.createWithResource(
+                                        requireContext(),
+                                        R.drawable.ic_baseline_chat_24
+                                    )
+                                )
+                                .build()
+
+                        val pinnedShortcutCallbackIntent =
+                            ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo)
+
+                        val successCallback = PendingIntent.getBroadcast(
+                            requireContext(), 0,
+                            pinnedShortcutCallbackIntent, PendingIntent.FLAG_IMMUTABLE
+                        )
+
+                        ShortcutManagerCompat.requestPinShortcut(
+                            requireContext(),
+                            pinShortcutInfo,
+                            successCallback.intentSender
+                        )
+                    }
+
+                    R.id.feedback -> sendFeedback(getString(R.string.ai))
+                }
+
+                return true
+            }
+        }
+
+        requireActivity().addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext())
         speechRecognizer.setRecognitionListener(this)
@@ -196,5 +256,6 @@ class ChatFragment : Fragment(), RecognitionListener {
     companion object {
         const val TIMETABLE_INFO_ARG = "timetable_info"
         const val TIMETABLE_NAME_ARG = "timetable_name"
+        const val OPEN_AI_CHAT_ARG = "open_ai_chat"
     }
 }

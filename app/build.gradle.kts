@@ -2,12 +2,13 @@ plugins {
     id("com.android.application")
     id("kotlin-parcelize")
 
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("plugin.serialization") version "1.9.22"
     kotlin("android")
     kotlin("kapt")
 
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -24,8 +25,8 @@ android {
         applicationId = "com.wavecat.mivlgu"
         minSdk = 25
         targetSdk = 34
-        versionCode = 31
-        versionName = "1.9"
+        versionCode = 34
+        versionName = "1.10"
     }
 
     buildTypes {
@@ -60,14 +61,14 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
     implementation("org.jsoup:jsoup:1.15.4")
     implementation("androidx.preference:preference:1.2.1")
     implementation("io.ktor:ktor-client-core-jvm:2.3.6")
@@ -83,13 +84,14 @@ dependencies {
     implementation("io.noties.markwon:image:4.6.2")
     implementation("io.noties.markwon:linkify:4.6.2")
     implementation("io.noties.markwon:html:4.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.0")
     implementation("androidx.work:work-runtime:2.9.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     kapt("io.noties:prism4j-bundler:2.0.0")
     implementation("io.noties:prism4j:2.0.0")
     implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
-    implementation("com.google.firebase:firebase-analytics-ktx:21.5.1")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.6.2")
+    implementation("com.google.firebase:firebase-analytics-ktx:22.0.0")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:19.0.0")
     implementation("ru.rustore.sdk:remoteconfig:0.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }

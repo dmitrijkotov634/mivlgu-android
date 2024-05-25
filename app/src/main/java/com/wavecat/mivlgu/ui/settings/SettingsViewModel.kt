@@ -18,11 +18,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _showPrevGroups = MutableLiveData(repository.showPrevGroup)
     val showPrevGroups: LiveData<Boolean> = _showPrevGroups
 
-    private val _useAnalyticsFunctions = MutableLiveData(repository.useAnalyticsFunctions)
-    val useAnalyticsFunctions: LiveData<Boolean> = _useAnalyticsFunctions
+    private val _showExperiments = MutableLiveData(repository.showExperiments)
+    val showExperiments: LiveData<Boolean> = _showExperiments
 
-    fun showAnalyticsFunctions() {
-        _useAnalyticsFunctions.value = true
+    fun showExperiments() {
+        repository.showExperiments = true
+        _showExperiments.value = true
     }
 
     fun changeShowPrevGroups(state: Boolean) {

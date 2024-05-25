@@ -5,6 +5,8 @@
     <string name="ai">ИИ</string>
     <string name="info">Информация</string>
 
+    <string name="send_email">Отправить Email</string>
+
     <string name="settings">Настройки</string>
     <string name="feedback">Обратная связь</string>
 
@@ -13,9 +15,12 @@
 
     <string name="subgroup">п/г</string>
 
+    <string name="warning_current_week">Не удалось получить текущую учебную неделю. Отображение расписания может быть некорректным</string>
+
     <string name="even">Чётные</string>
     <string name="odd">Нечётные</string>
 
+    <string name="search_hint">Укажите фамилию преподавателя</string>
     <string name="search">Поиск</string>
     <string name="teacher">Препод.</string>
 

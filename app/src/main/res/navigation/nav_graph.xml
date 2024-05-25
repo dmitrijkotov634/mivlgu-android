@@ -9,12 +9,29 @@
         android:id="@+id/GroupFragment"
         android:name="com.wavecat.mivlgu.ui.groups.GroupFragment"
         android:label="@string/timetable"
-        tools:layout="@layout/group_fragment" />
+        tools:layout="@layout/group_fragment">
+
+        <action
+            android:id="@+id/action_GroupFragment_to_TimetableFragment"
+            app:destination="@id/TimetableFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out" />
+    </fragment>
 
     <fragment
         android:id="@+id/TimetableFragment"
         android:name="com.wavecat.mivlgu.ui.timetable.TimetableFragment"
-        tools:layout="@layout/timetable_fragment" />
+        android:label="@string/timetable"
+        tools:layout="@layout/timetable_fragment">
+
+        <argument
+            android:name="timetable_name"
+            app:argType="string" />
+
+        <argument
+            android:name="cache_key"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/SettingsFragment"

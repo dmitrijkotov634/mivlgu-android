@@ -91,13 +91,15 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        model.useAnalyticsFunctions.observe(viewLifecycleOwner) {
-            val visibility = if (it) View.VISIBLE else View.GONE
-            binding.title2.visibility = visibility
-            binding.analysisInfo.visibility = visibility
-            binding.showPrevGroup.visibility = visibility
-            binding.showTeacherPath.visibility = visibility
-            binding.preload.visibility = visibility
+        model.showExperiments.observe(viewLifecycleOwner) {
+            binding.run {
+                val visibility = if (it) View.VISIBLE else View.GONE
+                title2.visibility = visibility
+                analysisInfo.visibility = visibility
+                showPrevGroup.visibility = visibility
+                showTeacherPath.visibility = visibility
+                preload.visibility = visibility
+            }
         }
 
         binding.github.setOnClickListener { openUrl(GITHUB) }
@@ -110,7 +112,7 @@ class SettingsFragment : Fragment() {
                 if (clicks++ < 7) return
 
                 model.generateEasterEgg()
-                model.showAnalyticsFunctions()
+                model.showExperiments()
 
                 startActivity(
                     Intent(

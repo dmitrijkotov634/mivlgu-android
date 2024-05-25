@@ -16,7 +16,7 @@ import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.client.HttpClient
 import com.wavecat.mivlgu.client.Parser
-import com.wavecat.mivlgu.client.Static
+import com.wavecat.mivlgu.Constant
 import kotlinx.coroutines.delay
 import java.util.*
 
@@ -49,8 +49,8 @@ class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
         val calendar = Calendar.getInstance()
 
         val groups = buildList {
-            Static.facultiesIds.forEach { id ->
-                val facultyGroups = parser.pickGroups(id, Static.getSemester(calendar), Static.getYear(calendar))
+            Constant.facultiesIds.forEach { id ->
+                val facultyGroups = parser.pickGroups(id, Constant.getSemester(calendar), Constant.getYear(calendar))
                 repository.saveFacultyCache(id, facultyGroups)
                 addAll(facultyGroups)
             }
@@ -61,8 +61,8 @@ class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
         for ((index, group) in groups.withIndex()) {
             httpClient.scheduleGetJson(
                 group,
-                Static.getSemester(calendar),
-                Static.getYear(calendar)
+                Constant.getSemester(calendar),
+                Constant.getYear(calendar)
             ).let {
                 repository.saveTimetableCache(group, it)
             }

@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.wavecat.mivlgu.client.ScheduleGetResult
-import com.wavecat.mivlgu.client.Static
-import com.wavecat.mivlgu.client.Status
+import com.wavecat.mivlgu.client.models.Status
+import com.wavecat.mivlgu.preferences.BooleanPreference
+import com.wavecat.mivlgu.preferences.IntPreference
+import com.wavecat.mivlgu.preferences.StringPreference
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -21,40 +23,28 @@ class MainRepository(context: Context) {
     private val timetableCache: SharedPreferences =
         context.getSharedPreferences("timetable_cache", Context.MODE_PRIVATE)
 
-    var version: Int
-        get() = preferences.getInt(VERSION, 0)
-        set(value) = preferences.edit {
-            putInt(VERSION, value)
-            apply()
-        }
-
-    var extraDataVersion: Int
-        get() = preferences.getInt(EXTRA_DATA_VERSION, 0)
-        set(value) = preferences.edit {
-            putInt(EXTRA_DATA_VERSION, value)
-            apply()
-        }
+    var extraDataVersion by IntPreference(preferences, EXTRA_DATA_VERSION, 0)
+    var facultyIndex by IntPreference(preferences, FACULTY_INDEX, 0)
+    var teacherFio by StringPreference(preferences, TEACHER_FIO, "")
+    var disableFilter by BooleanPreference(preferences, DISABLE_FILTER, true)
+    var disableAI by BooleanPreference(preferences, DISABLE_AI, true)
+    var disableWeekClasses by BooleanPreference(preferences, DISABLE_WEEK_CLASSES, false)
+    var disableIEP by BooleanPreference(preferences, DISABLE_IEP, false)
+    var showPrevGroup by BooleanPreference(preferences, SHOW_PREV_GROUP, false)
+    var showTeacherPath by BooleanPreference(preferences, SHOW_TEACHER_PATH, false)
+    var showExperiments by BooleanPreference(preferences, SHOW_EXPERIMENTS, false)
 
     init {
-        if (version != BuildConfig.VERSION_CODE) {
-            version = BuildConfig.VERSION_CODE
-            extraDataVersion = 0
-        }
+        // migration
+
+        if (preferences.getInt("version", -1) != -1)
+            disableFilter = preferences.getBoolean(DISABLE_FILTER, false)
+
+        if (useAnalyticsFunctions)
+            showExperiments = true
     }
 
-    var facultyIndex: Int
-        get() = preferences.getInt(FACULTY_INDEX, 0)
-        set(value) = preferences.edit {
-            putInt(FACULTY_INDEX, value)
-            apply()
-        }
-
-    var teacherFio: String?
-        get() = preferences.getString(TEACHER_FIO, "")
-        set(value) = preferences.edit {
-            putString(TEACHER_FIO, value)
-            apply()
-        }
+    val useAnalyticsFunctions: Boolean get() = showPrevGroup || showTeacherPath
 
     var lastWeekNumber: Int?
         get() = preferences.getInt(LAST_WEEK_NUMBER, -1).takeIf { it != -1 }
@@ -62,51 +52,6 @@ class MainRepository(context: Context) {
             putInt(LAST_WEEK_NUMBER, value ?: -1)
             apply()
         }
-
-    var disableFilter: Boolean
-        get() = preferences.getBoolean(DISABLE_FILTER, false)
-        set(value) = preferences.edit {
-            putBoolean(DISABLE_FILTER, value)
-            apply()
-        }
-
-    var disableAI: Boolean
-        get() = preferences.getBoolean(DISABLE_AI, true)
-        set(value) = preferences.edit {
-            putBoolean(DISABLE_AI, value)
-            apply()
-        }
-
-    var disableWeekClasses: Boolean
-        get() = preferences.getBoolean(DISABLE_WEEK_CLASSES, false)
-        set(value) = preferences.edit {
-            putBoolean(DISABLE_WEEK_CLASSES, value)
-            apply()
-        }
-
-    var disableIEP: Boolean
-        get() = preferences.getBoolean(DISABLE_IEP, false)
-        set(value) = preferences.edit {
-            putBoolean(DISABLE_IEP, value)
-            apply()
-        }
-
-    var showPrevGroup: Boolean
-        get() = preferences.getBoolean(SHOW_PREV_GROUP, false)
-        set(value) = preferences.edit {
-            putBoolean(SHOW_PREV_GROUP, value)
-            apply()
-        }
-
-    var showTeacherPath: Boolean
-        get() = preferences.getBoolean(SHOW_TEACHER_PATH, false)
-        set(value) = preferences.edit {
-            putBoolean(SHOW_TEACHER_PATH, value)
-            apply()
-        }
-
-    val useAnalyticsFunctions: Boolean
-        get() = showPrevGroup || showTeacherPath
 
     fun saveFacultyCache(facultyId: Int, data: List<String>) = facultyCache.edit {
         putString(facultyId.toString(), Json.encodeToString(data))
@@ -123,7 +68,7 @@ class MainRepository(context: Context) {
         }
 
     fun getAllCachedGroups() = buildList {
-        Static.facultiesIds.forEach { id ->
+        Constant.facultiesIds.forEach { id ->
             addAll(loadFacultyCache(id))
         }
     }
@@ -140,7 +85,6 @@ class MainRepository(context: Context) {
         const val LAST_WEEK_NUMBER = "last_week_number"
 
         const val EXTRA_DATA_VERSION = "extra_data_version"
-        const val VERSION = "version"
 
         const val DISABLE_FILTER = "disable_filter"
         const val DISABLE_AI = "disable_ai"
@@ -149,6 +93,8 @@ class MainRepository(context: Context) {
 
         const val SHOW_PREV_GROUP = "show_prev_group"
         const val SHOW_TEACHER_PATH = "show_teacher_path"
+
+        const val SHOW_EXPERIMENTS = "show_experiments"
 
         val emptyScheduleGetResult = ScheduleGetResult(
             status = Status.OK,
