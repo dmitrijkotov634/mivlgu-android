@@ -44,7 +44,7 @@ class TimetableFragment : Fragment() {
 
     private val args: TimetableFragmentArgs by navArgs()
 
-    val dateFormat = SimpleDateFormat("dd.MM", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("dd.MM", Locale.getDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -174,8 +174,12 @@ class TimetableFragment : Fragment() {
 
         timetable.adapter = adapter
 
-        even.visibility = if (info.disableFilter) View.GONE else View.VISIBLE
-        odd.visibility = if (info.disableFilter) View.GONE else View.VISIBLE
+        val filterVisibility = if (info.disableFilter) View.GONE else View.VISIBLE
+        even.visibility = filterVisibility
+        odd.visibility = filterVisibility
+
+        current.visibility = if (info.disableFilter || info.currentWeek == null)
+            View.GONE else View.VISIBLE
 
         filter.setOnCheckedStateChangeListener(null)
 
@@ -183,14 +187,14 @@ class TimetableFragment : Fragment() {
             even.isChecked = info.isEven
             odd.isChecked = !info.isEven
 
-            adapter.setByParity(info.timetable, filter.checkedChipIds)
+            adapter.setByParity(info.isEven, info.currentWeek, info.timetable, filter.checkedChipIds)
         }
 
         adapter.scrollToToday(timetable, info.todayIndex)
 
         filter.setOnCheckedStateChangeListener { _, checkedIds ->
             if (!info.disableFilter) {
-                adapter.setByParity(info.timetable, checkedIds)
+                adapter.setByParity(info.isEven, info.currentWeek, info.timetable, checkedIds)
                 updateDayDates(adapter, info, checkedIds)
                 adapter.notifyDataSetChanged()
             }
@@ -220,16 +224,36 @@ class TimetableFragment : Fragment() {
         }
     }
 
-    private fun TimetableAdapter.setByParity(timetable: List<TimetableItem>, checkedIds: List<Int>) {
+    private fun TimetableAdapter.setByParity(
+        isEven: Boolean,
+        currentWeek: Int?,
+        timetable: List<TimetableItem>,
+        checkedIds: List<Int>
+    ) {
         items = timetable.filter {
             if (it is TimetableItem.ParaItem) {
-                it.para.typeWeek == WeekType.ALL ||
-                        (R.id.even in checkedIds && it.para.typeWeek == WeekType.EVEN) ||
-                        (R.id.odd in checkedIds && it.para.typeWeek == WeekType.ODD) ||
-                        checkedIds.isEmpty()
+                if (R.id.current in checkedIds)
+                    it.para.isToday(if (isEven) WeekType.EVEN else WeekType.ODD, currentWeek!!)
+                else
+                    it.para.typeWeek == WeekType.ALL ||
+                            (R.id.even in checkedIds && it.para.typeWeek == WeekType.EVEN) ||
+                            (R.id.odd in checkedIds && it.para.typeWeek == WeekType.ODD) ||
+                            checkedIds.isEmpty()
             } else
                 true
         }
+
+        items = items.filterIndexed { index, item ->
+            val nextItem = items.getOrNull(index + 1)
+
+            val isHeader = (item is TimetableItem.ParaHeader)
+            val nextIsHeader =
+                (nextItem is TimetableItem.DayHeader || nextItem is TimetableItem.ParaHeader || nextItem == null)
+
+            !(isHeader && nextIsHeader)
+        }
+
+        hideObviousWeekRange = R.id.current in checkedIds
     }
 
     private fun TimetableAdapter.scrollToToday(recyclerView: RecyclerView, day: Int) {

@@ -13,5 +13,6 @@ data class TimetableInfo(
     val currentWeek: Int?,
     val disableFilter: Boolean,
     val disableWeekClasses: Boolean,
-    val startDate: Calendar?
+    val startDate: Calendar?,
+    val hasInvalidRanges: Boolean
 ) : Parcelable

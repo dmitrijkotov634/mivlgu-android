@@ -26,13 +26,14 @@ class MainRepository(context: Context) {
     var extraDataVersion by IntPreference(preferences, EXTRA_DATA_VERSION, 0)
     var facultyIndex by IntPreference(preferences, FACULTY_INDEX, 0)
     var teacherFio by StringPreference(preferences, TEACHER_FIO, "")
-    var disableFilter by BooleanPreference(preferences, DISABLE_FILTER, true)
+    var disableFilter by BooleanPreference(preferences, DISABLE_FILTER, false)
     var disableAI by BooleanPreference(preferences, DISABLE_AI, true)
     var disableWeekClasses by BooleanPreference(preferences, DISABLE_WEEK_CLASSES, false)
     var disableIEP by BooleanPreference(preferences, DISABLE_IEP, false)
     var showPrevGroup by BooleanPreference(preferences, SHOW_PREV_GROUP, false)
     var showTeacherPath by BooleanPreference(preferences, SHOW_TEACHER_PATH, false)
     var showExperiments by BooleanPreference(preferences, SHOW_EXPERIMENTS, false)
+    var donationMade by BooleanPreference(preferences, DONATION_MADE, false)
 
     init {
         // migration
@@ -95,6 +96,7 @@ class MainRepository(context: Context) {
         const val SHOW_TEACHER_PATH = "show_teacher_path"
 
         const val SHOW_EXPERIMENTS = "show_experiments"
+        const val DONATION_MADE = "donation_made"
 
         val emptyScheduleGetResult = ScheduleGetResult(
             status = Status.OK,

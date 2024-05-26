@@ -27,6 +27,8 @@ class TimetableAdapter(
     var dates: List<String>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    var hideObviousWeekRange = false
+
     private val subgroup = context.getString(R.string.subgroup)
 
     private val daysNames = context.resources.getStringArray(R.array.days)
@@ -112,7 +114,7 @@ class TimetableAdapter(
                 else
                     range.week.toString()
 
-                is WeekRange.InvalidRange -> "<font color=red>err:'${range.unparsed}'</font>"
+                is WeekRange.InvalidRange -> "<font color=red>invalid:'${range.unparsed}'</font>"
             }
         }
 
@@ -153,6 +155,7 @@ class TimetableAdapter(
                 holder.binding.warning.setText(
                     when (item) {
                         TimetableItem.Warning.CURRENT_WEEK_NULL -> R.string.warning_current_week
+                        TimetableItem.Warning.HAS_INVALID_RANGES -> R.string.warning_has_invalid_ranges
                     }
                 )
             }
@@ -162,8 +165,12 @@ class TimetableAdapter(
 
                 val para = item.para
 
-                val underGroup = if (para.underGroup.isNullOrEmpty()) {
-                    para.numberWeekParsed.toPrettyHtmlString(item.para.typeWeek)
+                val weeks = if (para.underGroup.isNullOrEmpty()) {
+                    if (hideObviousWeekRange)
+                        ""
+                    else
+                        para.numberWeekParsed.toPrettyHtmlString(item.para.typeWeek)
+
                 } else {
                     buildList {
                         if (!item.para.underGroup1.isNullOrEmpty())
@@ -177,7 +184,7 @@ class TimetableAdapter(
 
                 holder.binding.itemTitle.text =
                     HtmlCompat.fromHtml(
-                        "${para.discipline} $underGroup ${para.name} ${para.aud} ${para.groupName}",
+                        "${para.discipline} $weeks ${para.name} ${para.aud} ${para.groupName}",
                         HtmlCompat.FROM_HTML_MODE_LEGACY
                     )
 

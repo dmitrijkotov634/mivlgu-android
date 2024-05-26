@@ -186,6 +186,22 @@
             tools:ignore="RtlHardcoded" />
 
         <Button
+            android:id="@+id/coffee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="32dp"
+            android:drawableLeft="@drawable/baseline_coffee_24"
+            android:drawableTint="?android:colorBackground"
+            android:text="@string/buy_me_coffee"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vk"
+            app:layout_constraintTop_toBottomOf="@+id/about"
+            tools:ignore="RtlHardcoded" />
+
+        <!--
+        <Button
             android:id="@+id/github"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -200,6 +216,7 @@
             app:layout_constraintStart_toEndOf="@+id/vk"
             app:layout_constraintTop_toBottomOf="@+id/about"
             tools:ignore="RtlHardcoded" />
+            -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

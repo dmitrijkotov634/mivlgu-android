@@ -94,4 +94,5 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics-ktx:19.0.0")
     implementation("ru.rustore.sdk:remoteconfig:0.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("ru.rustore.sdk:billingclient:5.1.1")
 }

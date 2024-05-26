@@ -16,9 +16,11 @@
     <string name="subgroup">п/г</string>
 
     <string name="warning_current_week">Не удалось получить текущую учебную неделю. Отображение расписания может быть некорректным</string>
+    <string name="warning_has_invalid_ranges">Не удалось обработать расписание. Обратитесь через форму обратной связи</string>
 
     <string name="even">Чётные</string>
     <string name="odd">Нечётные</string>
+    <string name="current">Текущая</string>
 
     <string name="search_hint">Укажите фамилию преподавателя</string>
     <string name="search">Поиск</string>
@@ -30,7 +32,11 @@
 
     <string name="vkontakte">Вконтакте</string>
     <string name="telegram">Телеграм</string>
+    <string name="buy_me_coffee">Купить мне кофе</string>
     <string name="iep">ИОП</string>
+
+    <string name="coffee_title">Кофе для разработчика</string>
+    <string name="coffee_description">Кофе для разработчика: эспрессо или американо. Благодарность и вдохновение в каждом глотке!</string>
 
     <string name="based_on_timetable">Расписание для %1$s. Функция является прототипом. Точность ответов не гарантируется.</string>
 
@@ -58,7 +64,7 @@
     <string name="disable_iep">Отключить вкладку ИОП</string>
     <string name="disable_ai">Отключить вкладку ИИ</string>
     <string name="data_analytics_info">Чтобы использовать аналитические функции, необходимо предварительно загрузить всё расписание занятий, что займет примерно 5 минут. Для начала загрузки нажмите на кнопку ниже. Данные формируются только для текущей учебной недели. Загруженное расписание всех групп может перестать быть актуальным со временем</string>
-    <string name="about">Сделано с &lt;3. Дмитрий Котов 2024.</string>
+    <string name="about">Сделано с ❤️ Дмитрий Котов 2024.</string>
 
     <string-array name="days">
         <item>Понедельник</item>

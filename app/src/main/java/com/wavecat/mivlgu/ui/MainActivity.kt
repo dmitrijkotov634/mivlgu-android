@@ -21,6 +21,7 @@ import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.databinding.ActivityMainBinding
 import com.wavecat.mivlgu.ui.chat.ChatFragment
+import com.wavecat.mivlgu.ui.donate.BillingViewModel
 import com.wavecat.mivlgu.ui.timetable.TimetableFragment
 import java.io.IOException
 
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val model by viewModels<MainViewModel>()
+    private val billingModel by viewModels<BillingViewModel>()
 
     private val repository by lazy { MainRepository(this) }
 
@@ -38,6 +40,10 @@ class MainActivity : AppCompatActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
+        if (savedInstanceState == null) {
+            billingModel.billingClient.onNewIntent(intent)
+        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -89,7 +95,21 @@ class MainActivity : AppCompatActivity() {
             navController.popBackStack()
             navController.navigate(R.id.TimetableFragment, intent.extras, navOptions.build())
         }
+    }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        billingModel.billingClient.onNewIntent(intent)
+    }
+
+    fun invalidateNavMenu() {
+        binding.included.navView.menu.clear()
+        binding.included.navView.inflateMenu(R.menu.bottom_nav_menu)
+
+        removeDisabledMenuItems()
+    }
+
+    fun enableNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && repository.useAnalyticsFunctions) {
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { result: Boolean? ->
                 if (!result!!) {
@@ -101,13 +121,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-    }
-
-    fun invalidateNavMenu() {
-        binding.included.navView.menu.clear()
-        binding.included.navView.inflateMenu(R.menu.bottom_nav_menu)
-
-        removeDisabledMenuItems()
     }
 
     private fun removeDisabledMenuItems() {

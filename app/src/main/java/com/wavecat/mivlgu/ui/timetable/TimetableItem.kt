@@ -8,7 +8,8 @@ import kotlinx.parcelize.Parcelize
 sealed interface TimetableItem : Parcelable {
     @Parcelize
     enum class Warning : TimetableItem {
-        CURRENT_WEEK_NULL
+        CURRENT_WEEK_NULL, // Неопределена текущая неделя
+        HAS_INVALID_RANGES // Не удалось спарсить перечисление недель
     }
 
     @Parcelize

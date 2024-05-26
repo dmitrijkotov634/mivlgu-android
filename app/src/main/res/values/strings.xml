@@ -22,8 +22,10 @@
 
     <string name="even">Even</string>
     <string name="odd">Odd</string>
+    <string name="current">Current</string>
 
     <string name="warning_current_week">Could not get the current school week. The schedule may not be displayed correctly</string>
+    <string name="warning_has_invalid_ranges">Failed to process the schedule. Please contact us via the feedback form.</string>
 
     <string name="search_hint">Please enter your teacher name</string>
     <string name="search">Search</string>
@@ -35,8 +37,12 @@
 
     <string name="telegram">Telegram</string>
     <string name="vkontakte">Vkontakte</string>
+    <string name="buy_me_coffee">Buy me coffee</string>
     <string name="github" translatable="false">GitHub</string>
     <string name="iep">IEP</string>
+
+    <string name="coffee_title">Coffee for the developer</string>
+    <string name="coffee_description">Coffee for the developer: espresso or Americano. Gratitude and inspiration in every sip!</string>
 
     <string name="based_on_timetable">Timetable for %1$s. The function is a prototype. Answers are not guaranteed to be accurate.</string>
 
@@ -64,7 +70,7 @@
     <string name="disable_iep">Disable IEP tab</string>
     <string name="disable_ai">Disable AI tab</string>
     <string name="data_analytics_info">To use the analytics features, you must first download your entire class schedule, which will take approximately 5 minutes. To start downloading, click on the button below. Analytical data is generated only for the current school week indicated on the website. The loaded schedule of all groups may no longer be relevant over time</string>
-    <string name="about">Made with &lt;3. Dmitry Kotov 2024.</string>
+    <string name="about">Made with ❤️ Dmitry Kotov 2024.</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

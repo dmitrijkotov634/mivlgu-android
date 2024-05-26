@@ -12,6 +12,7 @@ import com.wavecat.mivlgu.client.HttpClient
 import com.wavecat.mivlgu.client.Parser
 import com.wavecat.mivlgu.client.ScheduleGetResult
 import com.wavecat.mivlgu.client.models.Status
+import com.wavecat.mivlgu.client.models.WeekType
 import com.wavecat.mivlgu.ui.settings.SettingsViewModel
 import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import com.wavecat.mivlgu.workers.BuildModelWorker
@@ -55,10 +56,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val currentGroupsList: LiveData<Pair<List<String>, List<Int>?>> = _currentGroupsList
 
     init {
+        // Получаем текущую учебную неделю из кэша
         handleException(true) { _currentWeek.value = repository.lastWeekNumber }
 
         viewModelScope.launch(Dispatchers.IO) {
             handleException {
+                // Получаем текущую учебную неделю по API
                 val weekNumber = parser.getWeekNumber()
                 _currentWeek.postValue(weekNumber)
                 repository.lastWeekNumber = weekNumber
@@ -110,6 +113,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             val id = Constant.facultiesIds[index]
 
+            // Загружаем список групп из кэша
             handleException(true) {
                 _currentGroupsList.postValue(repository.loadFacultyCache(id) to null)
             }
@@ -117,6 +121,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val calendar = Calendar.getInstance()
 
             handleException {
+                // Получаем актуальный список групп и записываем в кэш
                 val data = parser.pickGroups(id, Constant.getSemester(calendar), Constant.getYear(calendar))
                 _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(id, data)
@@ -131,6 +136,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         var cache: ScheduleGetResult? = null
 
+        // Загружаем расписание с кэша
         handleException(true) {
             cache = repository.loadTimetableCache(group).apply {
                 _currentTimetableError.value = createTimetableError(this)
@@ -142,6 +148,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch(Dispatchers.IO) {
             handleException {
+                // Получаем актуальное расписание и записываем в кэш
                 httpClient.scheduleGetJson(
                     group,
                     Constant.getSemester(calendar),
@@ -161,6 +168,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isLoading.value = true
 
         handleException(true) {
+            // Загружаем расписание с кэша
             repository.loadTimetableCache(teacherId.toString()).let {
                 _currentTimetableError.value = createTimetableError(it)
                 _currentTimetableInfo.value = createTimetableInfo(it)
@@ -171,6 +179,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             handleException {
                 val calendar = Calendar.getInstance()
 
+                // Получаем актуальное расписание и записываем в кэш
                 httpClient.scheduleGetTeacherJson(
                     teacherId,
                     Constant.getSemester(calendar),
@@ -208,10 +217,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             .takeIf { data.status == Status.ERROR }
 
     private fun createTimetableInfo(data: ScheduleGetResult, cache: ScheduleGetResult? = null): TimetableInfo {
-        val calendar = Calendar.getInstance().apply {
-            firstDayOfWeek = Calendar.MONDAY
-        }
+        val calendar = Calendar.getInstance().apply { firstDayOfWeek = Calendar.MONDAY }
 
+        // Получаем текущую учебную неделю по API иначе по времени на устройстве
         val currentWeek = _currentWeek.value ?: calendar.get(Calendar.WEEK_OF_YEAR)
         var isEven = currentWeek % 2 == 0
 
@@ -219,45 +227,46 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         val list = mutableListOf<TimetableItem>()
 
+        // Получаем последний день в расписании
         val lastDay = if (data.disciplines.size > 1) {
             data.disciplines.keys.last().toInt()
         } else {
             1
         }
 
+        // Инвертируем четность недели если расписание на текущей недел закончилось
         val inverted = Constant.defaultWeek.indexOf(calendar.get(Calendar.DAY_OF_WEEK)) > lastDay - 1
 
         if (inverted)
             isEven = !isEven
 
+        // Предпочтения пользователя
         val showPrevGroup = repository.showPrevGroup
         val showTeacherPath = repository.showTeacherPath
-        val disableFilter = repository.disableFilter
         var useAnalyticsFunctions = repository.useAnalyticsFunctions
 
-        var warningShowed = false
+        var disableFilter = repository.disableFilter
+        var disableWeekClasses = repository.disableWeekClasses
+
+        var hasInvalidRanges = false
 
         for (day in data.disciplines) {
             val dayIndex = day.key.toInt() - 1
 
+            // Проверяем является ли день в расписании сегодняшним
             val isToday = Constant.defaultWeek.getOrNull(dayIndex) == calendar.get(Calendar.DAY_OF_WEEK)
 
             list.add(TimetableItem.DayHeader(dayIndex))
 
-            if ((isToday || inverted) && !warningShowed) {
-                todayIndex = dayIndex
-
-                if (_currentWeek.value == null)
-                    list.add(TimetableItem.Warning.CURRENT_WEEK_NULL)
-
-                warningShowed = true
-            }
+            if (isToday)
+                todayIndex = dayIndex // Установили позицию для скролла
 
             for (klass in day.value) {
                 list.add(TimetableItem.ParaHeader(klass.key.toInt() - 1, isToday))
 
                 for (week in klass.value) {
                     for ((index, para) in week.value.withIndex()) {
+                        // Обработка аналитических функций
                         if (cache != null && useAnalyticsFunctions) {
                             val cachedPara =
                                 cache.disciplines[day.key]?.get(klass.key)?.get(week.key)?.get(index)
@@ -278,23 +287,45 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         }
 
-                        val item = TimetableItem.ParaItem(para)
+                        list.add(TimetableItem.ParaItem(para))
 
-                        list.add(item)
+                        // Проверяем наличие некорректных перечислений учебных недель
+                        runCatching {
+                            para.isToday(WeekType.ALL, currentWeek)
+                        }.onFailure {
+                            hasInvalidRanges = true
+                            it.printStackTrace()
+                        }
                     }
                 }
             }
         }
 
+        // Выводим предупреждения пользователю
+        if (_currentWeek.value == null)
+            list.add(todayIndex, TimetableItem.Warning.CURRENT_WEEK_NULL)
+
+        if (hasInvalidRanges)
+            list.add(todayIndex, TimetableItem.Warning.HAS_INVALID_RANGES)
+
+        // Инкрементируем значение недели если показываем следующую
         val weekValue = _currentWeek.value?.plus(if (inverted) 1 else 0)
 
-        val startDate = if (weekValue != null) {
-            Calendar.getInstance().apply {
+        // Получаем первую учебную неделю, вычитая текущую дату на устройстве и текущую неделю по API
+        var startDate: Calendar? = null
+        if (_currentWeek.value != null) {
+            startDate = Calendar.getInstance().apply {
                 firstDayOfWeek = Calendar.MONDAY
                 set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-                add(Calendar.WEEK_OF_YEAR, -weekValue + 1)
+                add(Calendar.WEEK_OF_YEAR, -(_currentWeek.value)!!)
             }
-        } else null
+        }
+
+        // Отключаем функции фильтрации расписания если при парсинге были обнаружены ошибки
+        if (hasInvalidRanges) {
+            disableFilter = true
+            disableWeekClasses = true
+        }
 
         return TimetableInfo(
             timetable = list,
@@ -302,8 +333,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             todayIndex = todayIndex,
             currentWeek = weekValue,
             disableFilter = disableFilter,
-            disableWeekClasses = repository.disableWeekClasses,
-            startDate = startDate
+            disableWeekClasses = disableWeekClasses,
+            startDate = startDate,
+            hasInvalidRanges = hasInvalidRanges
         )
     }
 

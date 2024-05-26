@@ -9,8 +9,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.transition.TransitionManager
 import com.wavecat.mivlgu.databinding.SettingsFragmentBinding
 import com.wavecat.mivlgu.ui.MainActivity
+import com.wavecat.mivlgu.ui.donate.BillingViewModel
+import com.wavecat.mivlgu.ui.donate.DonateDialog
 import com.wavecat.mivlgu.ui.timetable.TimetableFragment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,6 +26,7 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val model by activityViewModels<SettingsViewModel>()
+    private val billingModel by activityViewModels<BillingViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -102,7 +106,6 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        binding.github.setOnClickListener { openUrl(GITHUB) }
         binding.vk.setOnClickListener { openUrl(VK) }
 
         binding.about.setOnClickListener(object : View.OnClickListener {
@@ -113,6 +116,8 @@ class SettingsFragment : Fragment() {
 
                 model.generateEasterEgg()
                 model.showExperiments()
+
+                (requireActivity() as MainActivity).enableNotifications()
 
                 startActivity(
                     Intent(
@@ -125,6 +130,17 @@ class SettingsFragment : Fragment() {
                 )
             }
         })
+
+        binding.coffee.setOnClickListener {
+            DonateDialog().show(childFragmentManager, "DonateDialog")
+        }
+
+        billingModel.billingAvailability.observe(viewLifecycleOwner) {
+            TransitionManager.beginDelayedTransition(binding.root)
+            binding.coffee.visibility = if (it) View.VISIBLE else View.GONE
+        }
+
+        billingModel.checkAvailability()
     }
 
     private fun onNavMenuChanged() = binding.run {

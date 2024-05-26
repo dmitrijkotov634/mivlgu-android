@@ -37,4 +37,11 @@ data class Para(
 
     @IgnoredOnParcel
     val underGroup2Parsed by lazy { parseEnumeration(underGroup2 ?: "") }
+
+    fun isToday(weekType: WeekType, currentWeek: Int): Boolean {
+        if (numberWeekParsed.isToday(weekType, currentWeek))
+            return true
+
+        return (underGroup1Parsed.isToday(weekType, currentWeek) || underGroup2Parsed.isToday(weekType, currentWeek))
+    }
 }
