@@ -3,7 +3,7 @@ package com.wavecat.mivlgu.ui
 import android.os.Parcelable
 import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.Calendar
 
 @Parcelize
 data class TimetableInfo(
@@ -14,5 +14,6 @@ data class TimetableInfo(
     val disableFilter: Boolean,
     val disableWeekClasses: Boolean,
     val startDate: Calendar?,
-    val hasInvalidRanges: Boolean
+    val hasInvalidRanges: Boolean,
+    val showCurrentWeek: Boolean
 ) : Parcelable

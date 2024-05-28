@@ -32,18 +32,10 @@ class MainRepository(context: Context) {
     var disableIEP by BooleanPreference(preferences, DISABLE_IEP, false)
     var showPrevGroup by BooleanPreference(preferences, SHOW_PREV_GROUP, false)
     var showTeacherPath by BooleanPreference(preferences, SHOW_TEACHER_PATH, false)
+    var showCurrentWeek by BooleanPreference(preferences, SHOW_CURRENT_WEEK, false)
     var showExperiments by BooleanPreference(preferences, SHOW_EXPERIMENTS, false)
     var donationMade by BooleanPreference(preferences, DONATION_MADE, false)
-
-    init {
-        // migration
-
-        if (preferences.getInt("version", -1) != -1)
-            disableFilter = preferences.getBoolean(DISABLE_FILTER, false)
-
-        if (useAnalyticsFunctions)
-            showExperiments = true
-    }
+    var purchaseId by StringPreference(preferences, PURCHASE_ID, "")
 
     val useAnalyticsFunctions: Boolean get() = showPrevGroup || showTeacherPath
 
@@ -94,9 +86,11 @@ class MainRepository(context: Context) {
 
         const val SHOW_PREV_GROUP = "show_prev_group"
         const val SHOW_TEACHER_PATH = "show_teacher_path"
+        const val SHOW_CURRENT_WEEK = "show_current_week"
 
         const val SHOW_EXPERIMENTS = "show_experiments"
         const val DONATION_MADE = "donation_made"
+        const val PURCHASE_ID = "purchase_id"
 
         val emptyScheduleGetResult = ScheduleGetResult(
             status = Status.OK,

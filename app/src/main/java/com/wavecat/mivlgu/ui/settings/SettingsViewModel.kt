@@ -49,6 +49,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         repository.disableFilter = state
     }
 
+    private val _showCurrentWeek = MutableLiveData(repository.showCurrentWeek)
+    val showCurrentWeek: LiveData<Boolean> = _showCurrentWeek
+
+    fun changeShowCurrentWeek(state: Boolean) {
+        _showCurrentWeek.value = state
+        repository.showCurrentWeek = state
+    }
+
     private val _disableWeekClasses = MutableLiveData(repository.disableWeekClasses)
     val disableWeekClasses: LiveData<Boolean> = _disableWeekClasses
 

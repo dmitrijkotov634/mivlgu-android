@@ -4,7 +4,12 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -29,7 +34,8 @@ import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.ui.chat.ChatFragment
 import com.wavecat.mivlgu.ui.sendFeedback
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 
 class TimetableFragment : Fragment() {
@@ -103,7 +109,10 @@ class TimetableFragment : Fragment() {
                                 .build()
 
                         val pinnedShortcutCallbackIntent =
-                            ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo)
+                            ShortcutManagerCompat.createShortcutResultIntent(
+                                requireContext(),
+                                pinShortcutInfo
+                            )
 
                         val successCallback = PendingIntent.getBroadcast(
                             requireContext(), 0,
@@ -175,22 +184,30 @@ class TimetableFragment : Fragment() {
         timetable.adapter = adapter
 
         val filterVisibility = if (info.disableFilter) View.GONE else View.VISIBLE
+
         even.visibility = filterVisibility
         odd.visibility = filterVisibility
 
-        current.visibility = if (info.disableFilter || info.currentWeek == null)
+        current.visibility = if (info.disableFilter || !info.showCurrentWeek)
             View.GONE else View.VISIBLE
 
         filter.setOnCheckedStateChangeListener(null)
 
         if (!info.disableFilter) {
-            even.isChecked = info.isEven
-            odd.isChecked = !info.isEven
+            if (info.showCurrentWeek) {
+                current.isChecked = true
+            } else {
+                even.isChecked = info.isEven
+                odd.isChecked = !info.isEven
+            }
 
-            adapter.setByParity(info.isEven, info.currentWeek, info.timetable, filter.checkedChipIds)
+            adapter.setByParity(
+                info.isEven,
+                info.currentWeek,
+                info.timetable,
+                filter.checkedChipIds
+            )
         }
-
-        adapter.scrollToToday(timetable, info.todayIndex)
 
         filter.setOnCheckedStateChangeListener { _, checkedIds ->
             if (!info.disableFilter) {
@@ -201,9 +218,14 @@ class TimetableFragment : Fragment() {
         }
 
         updateDayDates(adapter, info, binding.filter.checkedChipIds)
+        adapter.scrollToToday(timetable, info.todayIndex)
     }
 
-    private fun updateDayDates(adapter: TimetableAdapter, info: TimetableInfo, checkedIds: List<Int>) {
+    private fun updateDayDates(
+        adapter: TimetableAdapter,
+        info: TimetableInfo,
+        checkedIds: List<Int>
+    ) {
         if (info.startDate != null && info.currentWeek != null) {
             val incrementWeek = (
                     (R.id.even in checkedIds && !info.isEven) ||

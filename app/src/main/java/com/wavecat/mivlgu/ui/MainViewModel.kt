@@ -1,8 +1,11 @@
 package com.wavecat.mivlgu.ui
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -18,7 +21,7 @@ import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import com.wavecat.mivlgu.workers.BuildModelWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = MainRepository(application)
@@ -122,7 +125,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             handleException {
                 // Получаем актуальный список групп и записываем в кэш
-                val data = parser.pickGroups(id, Constant.getSemester(calendar), Constant.getYear(calendar))
+                val data = parser.pickGroups(
+                    id,
+                    Constant.getSemester(calendar),
+                    Constant.getYear(calendar)
+                )
                 _currentGroupsList.postValue(data to null)
                 repository.saveFacultyCache(id, data)
             }
@@ -216,7 +223,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
             .takeIf { data.status == Status.ERROR }
 
-    private fun createTimetableInfo(data: ScheduleGetResult, cache: ScheduleGetResult? = null): TimetableInfo {
+    private fun createTimetableInfo(
+        data: ScheduleGetResult,
+        cache: ScheduleGetResult? = null
+    ): TimetableInfo {
         val calendar = Calendar.getInstance().apply { firstDayOfWeek = Calendar.MONDAY }
 
         // Получаем текущую учебную неделю по API иначе по времени на устройстве
@@ -224,6 +234,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         var isEven = currentWeek % 2 == 0
 
         var todayIndex = 0
+        var todayItemIndex = 0
 
         val list = mutableListOf<TimetableItem>()
 
@@ -235,7 +246,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Инвертируем четность недели если расписание на текущей недел закончилось
-        val inverted = Constant.defaultWeek.indexOf(calendar.get(Calendar.DAY_OF_WEEK)) > lastDay - 1
+        val inverted =
+            Constant.defaultWeek.indexOf(calendar.get(Calendar.DAY_OF_WEEK)) > lastDay - 1
 
         if (inverted)
             isEven = !isEven
@@ -247,6 +259,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         var disableFilter = repository.disableFilter
         var disableWeekClasses = repository.disableWeekClasses
+        var showCurrentWeek = repository.showCurrentWeek
 
         var hasInvalidRanges = false
 
@@ -254,12 +267,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val dayIndex = day.key.toInt() - 1
 
             // Проверяем является ли день в расписании сегодняшним
-            val isToday = Constant.defaultWeek.getOrNull(dayIndex) == calendar.get(Calendar.DAY_OF_WEEK)
+            val isToday =
+                Constant.defaultWeek.getOrNull(dayIndex) == calendar.get(Calendar.DAY_OF_WEEK)
 
             list.add(TimetableItem.DayHeader(dayIndex))
 
-            if (isToday)
+            if (isToday) {
                 todayIndex = dayIndex // Установили позицию для скролла
+                todayItemIndex = list.size
+            }
 
             for (klass in day.value) {
                 list.add(TimetableItem.ParaHeader(klass.key.toInt() - 1, isToday))
@@ -269,7 +285,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         // Обработка аналитических функций
                         if (cache != null && useAnalyticsFunctions) {
                             val cachedPara =
-                                cache.disciplines[day.key]?.get(klass.key)?.get(week.key)?.get(index)
+                                cache.disciplines[day.key]?.get(klass.key)?.get(week.key)
+                                    ?.get(index)
 
                             if (cachedPara != null)
                                 para.extraData = cachedPara.extraData
@@ -302,11 +319,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Выводим предупреждения пользователю
-        if (_currentWeek.value == null)
-            list.add(todayIndex, TimetableItem.Warning.CURRENT_WEEK_NULL)
+        if (_currentWeek.value == null) {
+            list.add(todayItemIndex, TimetableItem.Warning.CURRENT_WEEK_NULL)
 
-        if (hasInvalidRanges)
-            list.add(todayIndex, TimetableItem.Warning.HAS_INVALID_RANGES)
+            // Отключаем переключатель текущей неделе если не удалось получить текущую неделю
+            showCurrentWeek = false
+        }
+
+        if (hasInvalidRanges) {
+            list.add(todayItemIndex, TimetableItem.Warning.HAS_INVALID_RANGES)
+
+            // Отключаем функции фильтрации расписания если при парсинге были обнаружены ошибки
+            disableFilter = true
+            disableWeekClasses = true
+        }
 
         // Инкрементируем значение недели если показываем следующую
         val weekValue = _currentWeek.value?.plus(if (inverted) 1 else 0)
@@ -321,12 +347,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Отключаем функции фильтрации расписания если при парсинге были обнаружены ошибки
-        if (hasInvalidRanges) {
-            disableFilter = true
-            disableWeekClasses = true
-        }
-
         return TimetableInfo(
             timetable = list,
             isEven = isEven,
@@ -335,7 +355,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             disableFilter = disableFilter,
             disableWeekClasses = disableWeekClasses,
             startDate = startDate,
-            hasInvalidRanges = hasInvalidRanges
+            hasInvalidRanges = hasInvalidRanges,
+            showCurrentWeek = showCurrentWeek
         )
     }
 

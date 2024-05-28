@@ -38,6 +38,10 @@
     <string name="coffee_title">Кофе для разработчика</string>
     <string name="coffee_description">Кофе для разработчика: эспрессо или американо. Благодарность и вдохновение в каждом глотке!</string>
 
+    <string name="thanks_for_support">Спасибо за поддержку!</string>
+    <string name="please">Пожайлуста</string>
+    <string name="thanks_description">Ваш вклад помогает нам развивать и улучшать наше приложение. Мы очень ценим вашу помощь!</string>
+
     <string name="based_on_timetable">Расписание для %1$s. Функция является прототипом. Точность ответов не гарантируется.</string>
 
     <string name="message">Сообщение</string>
@@ -56,6 +60,7 @@
     <string name="preload_timetable">Предзагрузить расписание</string>
     <string name="disable_filter">Отключить фильтрацию по четности недель</string>
     <string name="disable_week_classes">Не подсказывать пары на текущей неделе</string>
+    <string name="show_current_week">Показывать переключатель текущей недели</string>
     <string name="show_prev_group">Отображать информацию о предудыщих посетителях аудитории</string>
     <string name="show_teacher_path">Показывать перемещения преподавателей между корпусами</string>
     <string name="data_analytics">Аналитика данных</string>

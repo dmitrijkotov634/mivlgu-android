@@ -14,6 +14,7 @@ import com.wavecat.mivlgu.databinding.SettingsFragmentBinding
 import com.wavecat.mivlgu.ui.MainActivity
 import com.wavecat.mivlgu.ui.donate.BillingViewModel
 import com.wavecat.mivlgu.ui.donate.DonateDialog
+import com.wavecat.mivlgu.ui.donate.ThanksDialog
 import com.wavecat.mivlgu.ui.timetable.TimetableFragment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -55,6 +56,14 @@ class SettingsFragment : Fragment() {
             binding.disableWeekClasses.isChecked = it
             binding.disableWeekClasses.setOnCheckedChangeListener { _, isChecked ->
                 model.changeDisableWeekClasses(isChecked)
+            }
+        }
+
+        model.showCurrentWeek.observe(viewLifecycleOwner) {
+            binding.showCurrentWeek.setOnCheckedChangeListener(null)
+            binding.showCurrentWeek.isChecked = it
+            binding.showCurrentWeek.setOnCheckedChangeListener { _, isChecked ->
+                model.changeShowCurrentWeek(isChecked)
             }
         }
 
@@ -133,6 +142,13 @@ class SettingsFragment : Fragment() {
 
         binding.coffee.setOnClickListener {
             DonateDialog().show(childFragmentManager, "DonateDialog")
+        }
+
+        billingModel.billingMade.observe(viewLifecycleOwner) { status ->
+            if (status) {
+                billingModel.buyMore()
+                ThanksDialog().show(childFragmentManager, "ThanksDialog")
+            }
         }
 
         billingModel.billingAvailability.observe(viewLifecycleOwner) {

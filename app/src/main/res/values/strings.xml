@@ -44,6 +44,11 @@
     <string name="coffee_title">Coffee for the developer</string>
     <string name="coffee_description">Coffee for the developer: espresso or Americano. Gratitude and inspiration in every sip!</string>
 
+    <string name="thanks_for_support">Thanks for support!</string>
+    <string name="please">Please</string>
+    <string name="thanks_description">Your contribution helps us develop and improve our application. We really appreciate your help!</string>
+    <string name="party_popper" translatable="false">🎉</string>
+
     <string name="based_on_timetable">Timetable for %1$s. The function is a prototype. Answers are not guaranteed to be accurate.</string>
 
     <string name="message">Message</string>
@@ -62,6 +67,7 @@
     <string name="preload_timetable">Preload timetable</string>
     <string name="disable_filter">Disable filtering by parity of weeks</string>
     <string name="disable_week_classes">Don\'t suggest classes this week</string>
+    <string name="show_current_week">Show current week switch</string>
     <string name="show_prev_group">Display information about previous audience visitors</string>
     <string name="show_teacher_path">Show teachers moving between buildings</string>
     <string name="data_analytics">Data Analytics</string>
