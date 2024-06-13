@@ -5,15 +5,15 @@ package com.wavecat.mivlgu.ui.chat.plugins
 import android.app.Application
 import com.wavecat.mivlgu.Constant
 import com.wavecat.mivlgu.R
-import com.wavecat.mivlgu.client.models.WeekType
+import com.wavecat.mivlgu.client.models.Para
 import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.ui.chat.models.Message
 import com.wavecat.mivlgu.ui.timetable.TimetableItem
-import java.util.*
+import java.util.Calendar
 
 class Timetable(
     application: Application,
-    var timetableInfo: TimetableInfo? = null
+    var timetableInfo: TimetableInfo.Success? = null
 ) : Plugin {
     override suspend fun onPostProcessMessage(assistantMessage: Message) {}
 
@@ -24,8 +24,7 @@ class Timetable(
             timetableInfo?.let {
                 append("\n")
                 append(it.asString())
-                append("\n")
-                append("Учитывай подгруппу пользователя если это требуется, расписание составлено для обоих подгрупп")
+                append("\nУчитывай подгруппу пользователя если это требуется, если подгруппа для пары не указана значит что она для двух подгрупп.")
             }
         }
     }
@@ -33,10 +32,10 @@ class Timetable(
     private val daysNames = application.resources.getStringArray(R.array.days)
     private val time = application.resources.getStringArray(R.array.time)
 
-    private fun TimetableInfo.asString() = buildString {
-        currentWeek?.let {
-            append("Идёт $it учебная неделя")
-        }
+    private fun TimetableInfo.Success.asString() = buildString {
+        requireNotNull(currentWeek)
+
+        append("Идёт $currentWeek учебная неделя")
 
         val dayOfWeek = Constant.defaultWeek.indexOf(
             Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
@@ -56,47 +55,34 @@ class Timetable(
 
                 is TimetableItem.ParaHeader -> {
                     append(item.index + 1)
-                    append(" пара ")
+                    append(") ")
+                    append("(")
                     append(time[item.index])
-                    append(":\n")
+                    append(") ")
                 }
 
                 is TimetableItem.ParaItem -> {
-                    append("- ")
-                    append(item.para.discipline)
-                    append(" (")
-                    append(item.para.aud)
-                    append(") - ")
-                    append(item.para.type)
-                    append(" - ")
-                    append(item.para.name)
-                    append(" - ")
+                    val status = item.para.fetchTodayStatus(currentWeek)
 
-                    if (item.para.groupName.isNotBlank()) {
-                        append(item.para.groupName)
-                        append(" - ")
+                    when (status) {
+                        Para.TodayStatus.FOR_FIRST_SUBGROUP -> append("1п/г ")
+                        Para.TodayStatus.FOR_SECOND_SUBGROUP -> append("2п/г ")
+                        Para.TodayStatus.FOR_ALL -> {}
+                        Para.TodayStatus.NOT_TODAY -> return@forEach
                     }
 
-                    if (item.para.underGroup.isNullOrEmpty()) {
-                        append("Недели для 1 и 2 подгруппы: ")
-                        append(item.para.numberWeek)
-                        append(
-                            when (item.para.typeWeek) {
-                                WeekType.EVEN -> " только чётные"
-                                WeekType.ODD -> " только нечётные"
-                                else -> ""
-                            }
-                        )
-                    } else
-                        append(
-                            buildList {
-                                if (!item.para.underGroup1.isNullOrEmpty())
-                                    add("Недели для 1 подгруппы: ${item.para.underGroup1}")
+                    append(item.para.type.uppercase())
+                    append(" ")
+                    append(item.para.discipline)
+                    append(" ")
+                    append(item.para.name)
+                    append(" ")
+                    append(item.para.audience)
 
-                                if (!item.para.underGroup2.isNullOrEmpty())
-                                    add("Недели для 2 подгруппы: ${item.para.underGroup2}")
-                            }.joinToString("; ")
-                        )
+                    if (item.para.groupName.isNotBlank()) {
+                        append(" ")
+                        append(item.para.groupName)
+                    }
 
                     append("\n")
                 }

@@ -22,7 +22,7 @@ object Constant {
     ) {
         operator fun rangeTo(time: Time) = TimeRange(this, time)
 
-        fun toCalendar(): Calendar = Calendar.getInstance().apply {
+        fun toJavaCalendar(): Calendar = Calendar.getInstance().apply {
             timeInMillis = 0
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
@@ -34,8 +34,8 @@ object Constant {
         val end: Time
     ) {
         fun check(current: Calendar): Boolean =
-            current.timeInMillis >= start.toCalendar().timeInMillis
-                    && current.timeInMillis <= end.toCalendar().timeInMillis
+            current.timeInMillis >= start.toJavaCalendar().timeInMillis
+                    && current.timeInMillis <= end.toJavaCalendar().timeInMillis
     }
 
     val timeRanges: List<TimeRange> = listOf(

@@ -2,10 +2,8 @@ package com.wavecat.mivlgu.ui
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -76,7 +74,13 @@ class MainActivity : AppCompatActivity() {
         model.loadingException.observe(this) {
             when (it) {
                 null -> {}
-                is IOException -> Snackbar.make(binding.root, R.string.no_internet, Snackbar.LENGTH_SHORT).show()
+
+                is IOException -> Snackbar.make(
+                    binding.root,
+                    R.string.no_internet,
+                    Snackbar.LENGTH_SHORT
+                ).show()
+
                 else -> binding.toolbar.subtitle = it.message
             }
         }
@@ -109,6 +113,7 @@ class MainActivity : AppCompatActivity() {
         removeDisabledMenuItems()
     }
 
+    /*
     fun enableNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && repository.useAnalyticsFunctions) {
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { result: Boolean? ->
@@ -121,13 +126,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-    }
+    }*/
 
     private fun removeDisabledMenuItems() {
         binding.included.navView.visibility =
             if (repository.disableAI && repository.disableIEP) View.GONE else View.VISIBLE
 
-        WindowCompat.setDecorFitsSystemWindows(window, repository.disableAI && repository.disableIEP)
+        WindowCompat.setDecorFitsSystemWindows(
+            window,
+            repository.disableAI && repository.disableIEP
+        )
 
         if (repository.disableIEP)
             binding.included.navView.menu.removeItem(R.id.iep)

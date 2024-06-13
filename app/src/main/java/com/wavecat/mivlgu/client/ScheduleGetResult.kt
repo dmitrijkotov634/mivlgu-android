@@ -6,6 +6,7 @@ import com.wavecat.mivlgu.client.models.DisciplinesForWeek
 import com.wavecat.mivlgu.client.models.Group
 import com.wavecat.mivlgu.client.models.Status
 import com.wavecat.mivlgu.client.models.Teacher
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,7 +17,8 @@ data class ScheduleGetResult(
     val teacher: Teacher? = null,
     val title: String = "",
     val message: String = "",
-    val semestr: String = "",
+    @SerialName("semestr")
+    val semester: String = "",
     val year: String = "",
     val disciplines: DisciplinesForWeek = mapOf(),
 )

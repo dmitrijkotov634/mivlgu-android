@@ -2,7 +2,9 @@ package com.wavecat.mivlgu.client.models
 
 import android.util.Log
 import com.wavecat.mivlgu.BuildConfig
-import com.wavecat.mivlgu.client.models.WeekRange.*
+import com.wavecat.mivlgu.client.models.WeekRange.InvalidRange
+import com.wavecat.mivlgu.client.models.WeekRange.Week
+import com.wavecat.mivlgu.client.models.WeekRange.WeekParityRange
 
 fun parseParityRange(string: String): WeekParityRange {
     val parts = string
@@ -20,6 +22,7 @@ fun parseEnumeration(string: String) = WeekEnumeration(buildList {
 
     if (prepared.isEmpty()) {
         Log.w(BuildConfig.APPLICATION_ID, "Empty string")
+        add(InvalidRange(""))
         return@buildList
     }
 

@@ -17,6 +17,8 @@ import com.wavecat.mivlgu.ParaExtraData
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.client.ScheduleGetResult
 import com.wavecat.mivlgu.client.models.Para
+import com.wavecat.mivlgu.workers.Navigator.getBuildingNumber
+import kotlin.time.DurationUnit
 
 class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -54,12 +56,12 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
             notificationManager.notify(id.hashCode(), notification)
 
         val data = buildList {
-            repository.getAllCachedGroups().forEach { group ->
-                add(group to repository.loadTimetableCache(group))
+            repository.retrieveAllCachedGroups().forEach { group ->
+                add(group to repository.retrieveTimetableCache(group))
             }
         }
 
-        val currentWeek = repository.lastWeekNumber ?: 0
+        val currentWeek = repository.cachedWeekNumber ?: 0
 
         for ((name, timetable) in data) {
             if (timetable == MainRepository.emptyScheduleGetResult)
@@ -70,17 +72,24 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
             for (day in timetable.disciplines)
                 for (classes in day.value)
                     for (week in classes.value)
-                        for (para in week.value)
-                            para.extraData = buildExtraData(
+                        for (para in week.value) {
+                            val extraData = ParaExtraData()
+
+                            buildExtraData(
                                 data = data,
                                 currentWeek = currentWeek,
                                 obtainGroup = name,
                                 obtainIndex = classes.key.toInt() - 1,
                                 obtainDay = day.key,
-                                obtainPara = para
+                                obtainPara = para,
+                                extraData
                             )
 
-            repository.saveTimetableCache(name, timetable)
+                            if (!extraData.isEmpty())
+                                para.extraData = extraData
+                        }
+
+            repository.cacheTimetableData(name, timetable)
         }
 
         repository.extraDataVersion = currentWeek
@@ -96,57 +105,52 @@ class BuildModelWorker(appContext: Context, workerParams: WorkerParameters) :
         obtainGroup: String,
         obtainIndex: Int,
         obtainDay: String,
-        obtainPara: Para
-    ): ParaExtraData? {
+        obtainPara: Para,
+        extraData: ParaExtraData
+    ) {
         if (obtainIndex == 0)
-            return null
+            return
 
-        val obtainBuilding = obtainPara.aud.split("/").last()
+        val obtainBuilding = Navigator.parse(obtainPara.audience).getBuildingNumber() ?: -1
 
         for ((group, timetable) in data) {
-            if (group == obtainGroup) continue
-
             val day = timetable.disciplines[obtainDay] ?: continue
             val klass = day[obtainIndex.toString()] ?: continue
 
-            for (week in klass.values) {
+            klass.values.forEach { week ->
                 for (para in week) {
-                    if (checkPara(para, currentWeek)) {
-                        val extraData = ParaExtraData()
+                    if (para.isLessonToday(currentWeek)) {
+                        if (group == obtainGroup) {
+                            val navigatorResult =
+                                Navigator.compare(obtainPara.audience, para.audience)
 
-                        if (para.aud == obtainPara.aud) {
+                            if (navigatorResult is Navigator.Result.Success) {
+                                val minutes = navigatorResult.duration.toInt(DurationUnit.MINUTES)
+
+                                if (minutes >= 2)
+                                    extraData.routeTime = minutes
+                            }
+
+                            return@forEach
+                        }
+
+                        if (para.audience == obtainPara.audience) {
                             extraData.prevName = para.name
                             extraData.prevGroupName = group
                         }
 
-                        val prevBuilding = para.aud.split("/").last()
+                        val prevBuilding =
+                            Navigator.parse(para.audience).getBuildingNumber() ?: continue
 
-                        if (para.name == obtainPara.name && prevBuilding != obtainBuilding)
-                            extraData.prevBuilding = para.aud
-
-                        if (extraData.isEmpty())
-                            continue
-
-                        return extraData
+                        if (para.name == obtainPara.name &&
+                            !Navigator.isCombinedBuilding(prevBuilding, obtainBuilding)
+                        )
+                            extraData.prevBuilding = para.audience
                     }
                 }
             }
         }
-
-        return null
     }
-
-    private fun checkPara(para: Para, currentWeek: Int): Boolean =
-        if (para.underGroup.isNullOrEmpty())
-            para.numberWeekParsed.isToday(para.typeWeek, currentWeek)
-        else
-            ((!para.underGroup1.isNullOrEmpty() && para.underGroup1Parsed.isToday(
-                para.typeWeek,
-                currentWeek
-            )) || (!para.underGroup2.isNullOrEmpty() && para.underGroup2Parsed.isToday(
-                para.typeWeek,
-                currentWeek
-            )))
 
     companion object {
         private const val CHANNEL_ID = "analysis"

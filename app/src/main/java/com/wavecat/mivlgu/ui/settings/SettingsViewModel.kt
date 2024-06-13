@@ -21,6 +21,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _showExperiments = MutableLiveData(repository.showExperiments)
     val showExperiments: LiveData<Boolean> = _showExperiments
 
+    private val _showTeacherPath = MutableLiveData(repository.showTeacherPath)
+    val showTeacherPath: LiveData<Boolean> = _showTeacherPath
+
+    private val _showRouteTime = MutableLiveData(repository.showRouteTime)
+    val showRouteTime: LiveData<Boolean> = _showRouteTime
+
+    private val _disableFilter = MutableLiveData(repository.disableFilter)
+    val disableFilter: LiveData<Boolean> = _disableFilter
+
+    private val _showCurrentWeek = MutableLiveData(repository.showCurrentWeek)
+    val showCurrentWeek: LiveData<Boolean> = _showCurrentWeek
+
+    private val _disableWeekClasses = MutableLiveData(repository.disableWeekClasses)
+    val disableWeekClasses: LiveData<Boolean> = _disableWeekClasses
+
+    private val _disableIEP = MutableLiveData(repository.disableIEP)
+    val disableIEP: LiveData<Boolean> = _disableIEP
+
+    private val _disableAI = MutableLiveData(repository.disableAI)
+    val disableAI: LiveData<Boolean> = _disableAI
+
     fun showExperiments() {
         repository.showExperiments = true
         _showExperiments.value = true
@@ -32,49 +53,37 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         repository.showPrevGroup = state
     }
 
-    private val _showTeacherPath = MutableLiveData(repository.showTeacherPath)
-    val showTeacherPath: LiveData<Boolean> = _showTeacherPath
-
     fun changeShowTeacherPath(state: Boolean) {
         if (state) buildModel()
         _showTeacherPath.value = state
         repository.showTeacherPath = state
     }
 
-    private val _disableFilter = MutableLiveData(repository.disableFilter)
-    val disableFilter: LiveData<Boolean> = _disableFilter
+    fun changeShowRouteTime(state: Boolean) {
+        if (state) buildModel()
+        _showRouteTime.value = state
+        repository.showRouteTime = state
+    }
 
     fun changeDisableFilter(state: Boolean) {
         _disableFilter.value = state
         repository.disableFilter = state
     }
 
-    private val _showCurrentWeek = MutableLiveData(repository.showCurrentWeek)
-    val showCurrentWeek: LiveData<Boolean> = _showCurrentWeek
-
     fun changeShowCurrentWeek(state: Boolean) {
         _showCurrentWeek.value = state
         repository.showCurrentWeek = state
     }
-
-    private val _disableWeekClasses = MutableLiveData(repository.disableWeekClasses)
-    val disableWeekClasses: LiveData<Boolean> = _disableWeekClasses
 
     fun changeDisableWeekClasses(state: Boolean) {
         _disableWeekClasses.value = state
         repository.disableWeekClasses = state
     }
 
-    private val _disableIEP = MutableLiveData(repository.disableIEP)
-    val disableIEP: LiveData<Boolean> = _disableIEP
-
     fun changeDisableIEP(state: Boolean) {
         _disableIEP.value = state
         repository.disableIEP = state
     }
-
-    private val _disableAI = MutableLiveData(repository.disableAI)
-    val disableAI: LiveData<Boolean> = _disableAI
 
     fun changeDisableAI(state: Boolean) {
         _disableAI.value = state
@@ -101,7 +110,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun generateEasterEgg() {
-        repository.saveTimetableCache(EASTER_EGG_KEY, EasterEgg.generate())
+        repository.cacheTimetableData(EASTER_EGG_KEY, EasterEgg.generate())
     }
 
     companion object {

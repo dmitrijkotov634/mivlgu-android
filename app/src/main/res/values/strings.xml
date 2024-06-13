@@ -49,7 +49,7 @@
     <string name="thanks_description">Your contribution helps us develop and improve our application. We really appreciate your help!</string>
     <string name="party_popper" translatable="false">🎉</string>
 
-    <string name="based_on_timetable">Timetable for %1$s. The function is a prototype. Answers are not guaranteed to be accurate.</string>
+    <string name="based_on_timetable">Timetable for %1$s</string>
 
     <string name="message">Message</string>
     <string name="delete">Delete</string>
@@ -70,6 +70,7 @@
     <string name="show_current_week">Show current week switch</string>
     <string name="show_prev_group">Display information about previous audience visitors</string>
     <string name="show_teacher_path">Show teachers moving between buildings</string>
+    <string name="show_route_time">Show the required time to move to the classroom where the next class will be held</string>
     <string name="data_analytics">Data Analytics</string>
     <string name="personalization">Personalization</string>
     <string name="other">Other</string>

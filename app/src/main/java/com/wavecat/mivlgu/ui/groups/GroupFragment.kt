@@ -2,7 +2,12 @@ package com.wavecat.mivlgu.ui.groups
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat.getSystemService
@@ -97,7 +102,12 @@ class GroupFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
                     android.R.id.home -> findNavController().navigateUp()
-                    R.id.settings -> findNavController().navigate(R.id.SettingsFragment, null, navOptions.build())
+                    R.id.settings -> findNavController().navigate(
+                        R.id.SettingsFragment,
+                        null,
+                        navOptions.build()
+                    )
+
                     R.id.feedback -> sendFeedback(getString(R.string.app_name))
                 }
 
@@ -116,7 +126,8 @@ class GroupFragment : Fragment() {
 
             if (index == MainViewModel.TEACHER_INDEX)
                 model.selectTeacher(repository.teacherFio)
-            else model.selectFaculty(index)
+            else
+                model.selectFaculty(index)
         }
 
         model.currentGroupsList.observe(viewLifecycleOwner) { group ->

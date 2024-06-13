@@ -32,41 +32,42 @@ class MainRepository(context: Context) {
     var disableIEP by BooleanPreference(preferences, DISABLE_IEP, false)
     var showPrevGroup by BooleanPreference(preferences, SHOW_PREV_GROUP, false)
     var showTeacherPath by BooleanPreference(preferences, SHOW_TEACHER_PATH, false)
+    var showRouteTime by BooleanPreference(preferences, SHOW_ROUTE_TIME, false)
     var showCurrentWeek by BooleanPreference(preferences, SHOW_CURRENT_WEEK, false)
     var showExperiments by BooleanPreference(preferences, SHOW_EXPERIMENTS, false)
     var donationMade by BooleanPreference(preferences, DONATION_MADE, false)
     var purchaseId by StringPreference(preferences, PURCHASE_ID, "")
 
-    val useAnalyticsFunctions: Boolean get() = showPrevGroup || showTeacherPath
+    val useAnalyticsFunctions: Boolean get() = showPrevGroup || showTeacherPath || showRouteTime
 
-    var lastWeekNumber: Int?
-        get() = preferences.getInt(LAST_WEEK_NUMBER, -1).takeIf { it != -1 }
+    var cachedWeekNumber: Int?
+        get() = preferences.getInt(CACHED_WEEK_NUMBER, -1).takeIf { it != -1 }
         set(value) = preferences.edit {
-            putInt(LAST_WEEK_NUMBER, value ?: -1)
+            putInt(CACHED_WEEK_NUMBER, value ?: -1)
             apply()
         }
 
-    fun saveFacultyCache(facultyId: Int, data: List<String>) = facultyCache.edit {
+    fun cacheFacultyData(facultyId: Int, data: List<String>) = facultyCache.edit {
         putString(facultyId.toString(), Json.encodeToString(data))
         apply()
     }
 
-    fun loadFacultyCache(facultyId: Int): List<String> =
+    fun retrieveFacultyCache(facultyId: Int): List<String> =
         Json.decodeFromString(facultyCache.getString(facultyId.toString(), "[]")!!)
 
-    fun saveTimetableCache(name: String, data: ScheduleGetResult) =
+    fun cacheTimetableData(name: String, data: ScheduleGetResult) =
         timetableCache.edit {
             putString(name, Json.encodeToString(data))
             apply()
         }
 
-    fun getAllCachedGroups() = buildList {
+    fun retrieveAllCachedGroups() = buildList {
         Constant.facultiesIds.forEach { id ->
-            addAll(loadFacultyCache(id))
+            addAll(retrieveFacultyCache(id))
         }
     }
 
-    fun loadTimetableCache(name: String): ScheduleGetResult {
+    fun retrieveTimetableCache(name: String): ScheduleGetResult {
         val result = timetableCache.getString(name, "")
         return if (result.isNullOrEmpty()) emptyScheduleGetResult
         else Json.decodeFromString(result)
@@ -75,7 +76,7 @@ class MainRepository(context: Context) {
     companion object {
         const val FACULTY_INDEX = "faculty_index"
         const val TEACHER_FIO = "teacher_fio"
-        const val LAST_WEEK_NUMBER = "last_week_number"
+        const val CACHED_WEEK_NUMBER = "cached_week_number"
 
         const val EXTRA_DATA_VERSION = "extra_data_version"
 
@@ -86,6 +87,8 @@ class MainRepository(context: Context) {
 
         const val SHOW_PREV_GROUP = "show_prev_group"
         const val SHOW_TEACHER_PATH = "show_teacher_path"
+        const val SHOW_ROUTE_TIME = "show_route_time"
+
         const val SHOW_CURRENT_WEEK = "show_current_week"
 
         const val SHOW_EXPERIMENTS = "show_experiments"
@@ -99,7 +102,7 @@ class MainRepository(context: Context) {
             teacher = null,
             title = "",
             message = "",
-            semestr = "",
+            semester = "",
             year = "",
             disciplines = mapOf()
         )

@@ -104,6 +104,14 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        model.showRouteTime.observe(viewLifecycleOwner) {
+            binding.showRouteTime.setOnCheckedChangeListener(null)
+            binding.showRouteTime.isChecked = it
+            binding.showRouteTime.setOnCheckedChangeListener { _, isChecked ->
+                model.changeShowRouteTime(isChecked)
+            }
+        }
+
         model.showExperiments.observe(viewLifecycleOwner) {
             binding.run {
                 val visibility = if (it) View.VISIBLE else View.GONE
@@ -111,6 +119,7 @@ class SettingsFragment : Fragment() {
                 analysisInfo.visibility = visibility
                 showPrevGroup.visibility = visibility
                 showTeacherPath.visibility = visibility
+                showRouteTime.visibility = visibility
                 preload.visibility = visibility
             }
         }
@@ -125,8 +134,6 @@ class SettingsFragment : Fragment() {
 
                 model.generateEasterEgg()
                 model.showExperiments()
-
-                (requireActivity() as MainActivity).enableNotifications()
 
                 startActivity(
                     Intent(
@@ -181,7 +188,6 @@ class SettingsFragment : Fragment() {
 
     companion object {
         const val TERMS_OF_USE = "https://telegra.ph/Polzovatelskoe-soglashenie-03-05-4"
-        const val GITHUB = "https://github.com/dmitrijkotov634/mivlgu-android"
         const val VK = "https://vk.com/bomb3r"
     }
 }

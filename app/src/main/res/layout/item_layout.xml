@@ -31,6 +31,18 @@
         app:layout_constraintTop_toBottomOf="@+id/flow" />
 
     <TextView
+        android:id="@+id/extra_data2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/extra_data_chip"
+        android:backgroundTint="?colorTertiaryContainer"
+        android:textColor="?colorOnTertiaryContainer"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/extra_data"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/extra_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -59,11 +71,11 @@
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/flow"
-        app:flow_horizontalGap="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        app:constraint_referenced_ids="extra_data,extra_data1"
+        app:constraint_referenced_ids="extra_data,extra_data1,extra_data2"
+        app:flow_horizontalGap="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

@@ -12,13 +12,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.wavecat.mivlgu.Constant
 import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.client.HttpClient
 import com.wavecat.mivlgu.client.Parser
-import com.wavecat.mivlgu.Constant
 import kotlinx.coroutines.delay
-import java.util.*
+import java.util.Calendar
 
 class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -50,13 +50,17 @@ class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val groups = buildList {
             Constant.facultiesIds.forEach { id ->
-                val facultyGroups = parser.pickGroups(id, Constant.getSemester(calendar), Constant.getYear(calendar))
-                repository.saveFacultyCache(id, facultyGroups)
+                val facultyGroups = parser.pickGroups(
+                    id,
+                    Constant.getSemester(calendar),
+                    Constant.getYear(calendar)
+                )
+                repository.cacheFacultyData(id, facultyGroups)
                 addAll(facultyGroups)
             }
         }
 
-        repository.lastWeekNumber = parser.getWeekNumber()
+        repository.cachedWeekNumber = parser.getWeekNumber()
 
         for ((index, group) in groups.withIndex()) {
             httpClient.scheduleGetJson(
@@ -64,7 +68,7 @@ class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
                 Constant.getSemester(calendar),
                 Constant.getYear(calendar)
             ).let {
-                repository.saveTimetableCache(group, it)
+                repository.cacheTimetableData(group, it)
             }
 
             val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
@@ -80,7 +84,7 @@ class PreloadWorker(appContext: Context, workerParams: WorkerParameters) :
             if (notificationsGranted)
                 notificationManager.notify(id.hashCode(), notification)
 
-            delay(1000)
+            delay(100)
         }
 
         notificationManager.cancel(id.hashCode())

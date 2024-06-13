@@ -42,7 +42,7 @@
     <string name="please">Пожайлуста</string>
     <string name="thanks_description">Ваш вклад помогает нам развивать и улучшать наше приложение. Мы очень ценим вашу помощь!</string>
 
-    <string name="based_on_timetable">Расписание для %1$s. Функция является прототипом. Точность ответов не гарантируется.</string>
+    <string name="based_on_timetable">Расписание для %1$s</string>
 
     <string name="message">Сообщение</string>
     <string name="delete">Удалить</string>
@@ -62,8 +62,9 @@
     <string name="disable_week_classes">Не подсказывать пары на текущей неделе</string>
     <string name="show_current_week">Показывать переключатель текущей недели</string>
     <string name="show_prev_group">Отображать информацию о предудыщих посетителях аудитории</string>
-    <string name="show_teacher_path">Показывать перемещения преподавателей между корпусами</string>
-    <string name="data_analytics">Аналитика данных</string>
+    <string name="show_teacher_path">Показывать длительные перемещения преподавателей между корпусами</string>
+    <string name="show_route_time">Показать необходимое время для перехода к аудитории, в которой будет проводиться следующее занятие</string>
+    <string name="data_analytics">Эксперименты по аналитике данных (секретно)</string>
     <string name="personalization">Персонализация</string>
     <string name="other">Другое</string>
     <string name="disable_iep">Отключить вкладку ИОП</string>

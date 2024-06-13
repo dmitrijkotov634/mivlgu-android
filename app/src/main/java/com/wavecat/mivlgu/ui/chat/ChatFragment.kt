@@ -11,7 +11,12 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -31,7 +36,7 @@ import com.wavecat.mivlgu.getParcelableCompat
 import com.wavecat.mivlgu.ui.MainActivity
 import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.ui.sendFeedback
-import java.util.*
+import java.util.Locale
 
 class ChatFragment : Fragment(), RecognitionListener {
 
@@ -84,7 +89,10 @@ class ChatFragment : Fragment(), RecognitionListener {
                                 .build()
 
                         val pinnedShortcutCallbackIntent =
-                            ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo)
+                            ShortcutManagerCompat.createShortcutResultIntent(
+                                requireContext(),
+                                pinShortcutInfo
+                            )
 
                         val successCallback = PendingIntent.getBroadcast(
                             requireContext(), 0,
@@ -199,7 +207,12 @@ class ChatFragment : Fragment(), RecognitionListener {
 
         model.timetableInfo.observe(viewLifecycleOwner) {
             binding.timetableInfo.visibility = if (it.isNullOrEmpty()) View.GONE else View.VISIBLE
-            binding.timetableInfo.text = getString(R.string.based_on_timetable, it ?: return@observe)
+            binding.timetableInfo.text =
+                getString(R.string.based_on_timetable, it ?: return@observe)
+        }
+
+        binding.timetableInfo.setOnClickListener {
+            model.setupTimetableInfo(null, null)
         }
 
         binding.messageInput.editText?.addTextChangedListener(object : TextWatcher {
@@ -221,7 +234,7 @@ class ChatFragment : Fragment(), RecognitionListener {
             if (it.containsKey(TIMETABLE_INFO_ARG)) {
                 model.setupTimetableInfo(
                     it.getString(TIMETABLE_NAME_ARG),
-                    it.getParcelableCompat<TimetableInfo>(TIMETABLE_INFO_ARG)
+                    it.getParcelableCompat<TimetableInfo.Success>(TIMETABLE_INFO_ARG)
                 )
             }
         }

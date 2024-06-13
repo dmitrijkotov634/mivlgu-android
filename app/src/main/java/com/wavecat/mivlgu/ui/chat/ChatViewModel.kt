@@ -13,15 +13,19 @@ import com.wavecat.mivlgu.ui.chat.models.CompletionsResult
 import com.wavecat.mivlgu.ui.chat.models.Message
 import com.wavecat.mivlgu.ui.chat.plugins.Plugin
 import com.wavecat.mivlgu.ui.chat.plugins.Timetable
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.android.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.utils.io.errors.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.request.url
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.errors.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -94,9 +98,12 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
+            val maxTokens =
+                if (timetable.timetableInfo == null) MAX_TOKENS else MAX_TOKENS_IN_TIMETABLE
+
             val systemMessageString = systemMessage.toString()
             val systemTokens = encoding.encode(systemMessageString).size
-            val tokenLimit = MAX_TOKENS - min(systemTokens, MAX_TOKENS)
+            val tokenLimit = maxTokens - min(systemTokens, maxTokens)
             val (inputMessages, _) = trimMessages(messages, tokenLimit)
             val inputMessagesMutable = inputMessages.toMutableList().apply {
                 add(0, Message(Message.SYSTEM, systemMessageString))
@@ -145,7 +152,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         _messageInputText.value = text
     }
 
-    fun setupTimetableInfo(name: String?, timetableInfo: TimetableInfo?) {
+    fun setupTimetableInfo(name: String?, timetableInfo: TimetableInfo.Success?) {
         timetable.timetableInfo = timetableInfo
         _timetableInfo.postValue(name)
     }
@@ -199,5 +206,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         const val MAX_TOKENS = 5000
+        const val MAX_TOKENS_IN_TIMETABLE = 3000
     }
 }

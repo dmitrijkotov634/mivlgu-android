@@ -39,22 +39,27 @@ object EasterEgg {
         "0,1-51,52"
     )
 
-    private fun generateClass(day: Int, klass: Int, weekType: WeekType, forGroups: Boolean = false) = Para(
+    private fun generateClass(
+        day: Int,
+        klass: Int,
+        weekType: WeekType,
+        forGroups: Boolean = false
+    ) = Para(
         idDay = day,
         numberPara = klass,
         discipline = disciplines.random(),
         type = types.random(),
         typeWeek = weekType,
-        aud = "Дома",
-        numberWeek = if (forGroups) "" else weekLayouts.random(),
+        audience = "Дома",
+        weekNumber = if (forGroups) "" else weekLayouts.random(),
         comment = "Без комментариев.",
         zaoch = null,
         name = NAME,
         groupName = "",
         countFieldsLabs = null,
-        underGroup = if (forGroups) "empty" else null,
-        underGroup1 = if (forGroups) weekLayouts.random() else null,
-        underGroup2 = if (forGroups) weekLayouts.random() else null,
+        subGroup = if (forGroups) "empty" else null,
+        subGroup1 = if (forGroups) weekLayouts.random() else null,
+        subGroup2 = if (forGroups) weekLayouts.random() else null,
         extraData = null
     )
 
@@ -64,12 +69,12 @@ object EasterEgg {
     )
 
     private fun generateDay(day: Int) = buildMap {
-        repeat(7) { klass ->
+        repeat(6) { klass ->
             val index = klass + 1
             put(index.toString(), generateClasses(day, index))
         }
 
-        put("8", generateClasses(day, 7, true))
+        put("7", generateClasses(day, 7, true))
     }
 
     fun generate() = ScheduleGetResult(
@@ -79,10 +84,10 @@ object EasterEgg {
         teacher = null,
         title = "",
         message = "",
-        semestr = "",
+        semester = "",
         year = "",
         disciplines = buildMap {
-            repeat(8) { day ->
+            repeat(7) { day ->
                 val index = day + 1
                 put(index.toString(), generateDay(index))
             }

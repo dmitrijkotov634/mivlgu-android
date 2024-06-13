@@ -69,7 +69,7 @@ class TimetableFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val menuProvider = object : MenuProvider {
-            var info: TimetableInfo? = null
+            var info: TimetableInfo.Success? = null
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.timetable_menu, menu)
@@ -77,7 +77,7 @@ class TimetableFragment : Fragment() {
                 if (!ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext()))
                     menu.removeItem(R.id.shortcut)
 
-                if (!repository.useAnalyticsFunctions)
+                if (!repository.showExperiments)
                     menu.removeItem(R.id.chat)
             }
 
@@ -131,6 +131,8 @@ class TimetableFragment : Fragment() {
                             .setEnterAnim(androidx.appcompat.R.anim.abc_fade_in)
                             .setExitAnim(androidx.appcompat.R.anim.abc_fade_out)
 
+                        if (info?.currentWeek == null) return true
+
                         info?.let {
                             findNavController().navigate(
                                 R.id.ChatFragment, bundleOf(
@@ -152,16 +154,21 @@ class TimetableFragment : Fragment() {
 
         requireActivity().addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        model.currentTimetableError.observe(viewLifecycleOwner) { error ->
-            binding.error.visibility = if (error == null) View.GONE else View.VISIBLE
-
-            if (error != null)
-                binding.error.text = error.title
-        }
-
         model.currentTimetableInfo.observe(viewLifecycleOwner) { info ->
-            loadTimetableInfo(info ?: return@observe)
-            menuProvider.info = info
+            when (info) {
+                is TimetableInfo.Failure -> {
+                    binding.error.visibility = View.VISIBLE
+                    binding.error.text = info.title
+                }
+
+                is TimetableInfo.Success -> {
+                    binding.error.visibility = View.GONE
+                    loadTimetableInfo(info)
+                    menuProvider.info = info
+                }
+
+                null -> {}
+            }
         }
 
         model.isLoading.observe(viewLifecycleOwner) {
@@ -172,7 +179,7 @@ class TimetableFragment : Fragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun loadTimetableInfo(info: TimetableInfo) = binding.run {
+    private fun loadTimetableInfo(info: TimetableInfo.Success) = binding.run {
         val adapter =
             TimetableAdapter(
                 requireContext(),
@@ -202,7 +209,6 @@ class TimetableFragment : Fragment() {
             }
 
             adapter.setByParity(
-                info.isEven,
                 info.currentWeek,
                 info.timetable,
                 filter.checkedChipIds
@@ -211,7 +217,7 @@ class TimetableFragment : Fragment() {
 
         filter.setOnCheckedStateChangeListener { _, checkedIds ->
             if (!info.disableFilter) {
-                adapter.setByParity(info.isEven, info.currentWeek, info.timetable, checkedIds)
+                adapter.setByParity(info.currentWeek, info.timetable, checkedIds)
                 updateDayDates(adapter, info, checkedIds)
                 adapter.notifyDataSetChanged()
             }
@@ -223,7 +229,7 @@ class TimetableFragment : Fragment() {
 
     private fun updateDayDates(
         adapter: TimetableAdapter,
-        info: TimetableInfo,
+        info: TimetableInfo.Success,
         checkedIds: List<Int>
     ) {
         if (info.startDate != null && info.currentWeek != null) {
@@ -247,7 +253,6 @@ class TimetableFragment : Fragment() {
     }
 
     private fun TimetableAdapter.setByParity(
-        isEven: Boolean,
         currentWeek: Int?,
         timetable: List<TimetableItem>,
         checkedIds: List<Int>
@@ -255,7 +260,7 @@ class TimetableFragment : Fragment() {
         items = timetable.filter {
             if (it is TimetableItem.ParaItem) {
                 if (R.id.current in checkedIds)
-                    it.para.isToday(if (isEven) WeekType.EVEN else WeekType.ODD, currentWeek!!)
+                    it.para.isLessonToday(currentWeek!!)
                 else
                     it.para.typeWeek == WeekType.ALL ||
                             (R.id.even in checkedIds && it.para.typeWeek == WeekType.EVEN) ||

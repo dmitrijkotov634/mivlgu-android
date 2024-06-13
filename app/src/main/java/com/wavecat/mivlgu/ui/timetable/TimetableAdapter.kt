@@ -10,6 +10,7 @@ import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.wavecat.mivlgu.Constant
 import com.wavecat.mivlgu.R
+import com.wavecat.mivlgu.client.models.Para
 import com.wavecat.mivlgu.client.models.WeekEnumeration
 import com.wavecat.mivlgu.client.models.WeekRange
 import com.wavecat.mivlgu.client.models.WeekType
@@ -17,7 +18,7 @@ import com.wavecat.mivlgu.databinding.DayHeaderBinding
 import com.wavecat.mivlgu.databinding.ItemLayoutBinding
 import com.wavecat.mivlgu.databinding.KlassHeaderBinding
 import com.wavecat.mivlgu.databinding.WarningCardBinding
-import java.util.*
+import java.util.Calendar
 
 
 class TimetableAdapter(
@@ -84,17 +85,20 @@ class TimetableAdapter(
             else -> throw IllegalArgumentException()
         }
 
-    private fun WeekEnumeration.toPrettyHtmlString(weekType: WeekType, groupId: Int? = null): String =
+    private fun WeekEnumeration.toPrettyHtmlString(
+        weekType: WeekType,
+        groupNumber: Int? = null
+    ): String =
         enumeration.joinToString(",") { range ->
             when (range) {
                 is WeekRange.WeekParityRange -> buildString {
-                    if (currentWeek != null && range.isToday(weekType, currentWeek)) {
+                    if (currentWeek != null && range.isLessonToday(weekType, currentWeek)) {
                         append(FORMAT_START)
-                        if (groupId != null) append("<font color=\"${groupColors[groupId]}\">")
+                        if (groupNumber != null) append("<font color=\"${groupColors[groupNumber]}\">")
                         append(range.start)
                         append("-")
                         append(range.end)
-                        if (groupId != null) append("</font>")
+                        if (groupNumber != null) append("</font>")
                         append(FORMAT_END)
                     } else {
                         append(range.start)
@@ -103,19 +107,43 @@ class TimetableAdapter(
                     }
                 }
 
-                is WeekRange.Week -> if (range.week == currentWeek)
+                is WeekRange.Week -> if (range.weekNumber == currentWeek)
                     buildString {
                         append(FORMAT_START)
-                        if (groupId != null) append("<font color=\"${groupColors[groupId]}\">")
-                        append(range.week.toString())
-                        if (groupId != null) append("</font>")
+                        if (groupNumber != null) append("<font color=\"${groupColors[groupNumber]}\">")
+                        append(range.weekNumber.toString())
+                        if (groupNumber != null) append("")
                         append(FORMAT_END)
                     }
                 else
-                    range.week.toString()
+                    range.weekNumber.toString()
 
                 is WeekRange.InvalidRange -> "<font color=red>invalid:'${range.unparsed}'</font>"
             }
+        }
+
+    private fun buildGroupWeekEnumString(para: Para, enumeration: WeekEnumeration, groupId: Int) =
+        "${groupId + 1}$subgroup ${enumeration.toPrettyHtmlString(para.typeWeek, groupId)}"
+
+    private fun buildWeeksString(para: Para) =
+        if (para.subGroup.isNullOrEmpty()) {
+            if (hideObviousWeekRange) "" else para.parsedWeekNumber.toPrettyHtmlString(para.typeWeek)
+        } else if (hideObviousWeekRange) {
+            val groupId = when (para.fetchTodayStatus(currentWeek!!)) {
+                Para.TodayStatus.FOR_FIRST_SUBGROUP -> 0
+                Para.TodayStatus.FOR_SECOND_SUBGROUP -> 1
+                else -> -1
+            }
+
+            "<font color=\"${groupColors[groupId]}\">${groupId + 1}$subgroup</font>"
+        } else {
+            buildList {
+                if (!para.subGroup1.isNullOrEmpty())
+                    add(buildGroupWeekEnumString(para, para.parsedSubGroup1, 0))
+
+                if (!para.subGroup2.isNullOrEmpty())
+                    add(buildGroupWeekEnumString(para, para.parsedSubGroup2, 1))
+            }.joinToString(" ")
         }
 
     @SuppressLint("SetTextI18n")
@@ -165,26 +193,9 @@ class TimetableAdapter(
 
                 val para = item.para
 
-                val weeks = if (para.underGroup.isNullOrEmpty()) {
-                    if (hideObviousWeekRange)
-                        ""
-                    else
-                        para.numberWeekParsed.toPrettyHtmlString(item.para.typeWeek)
-
-                } else {
-                    buildList {
-                        if (!item.para.underGroup1.isNullOrEmpty())
-                            add("1$subgroup ${para.underGroup1Parsed.toPrettyHtmlString(para.typeWeek, 0)}")
-
-                        if (!item.para.underGroup2.isNullOrEmpty())
-                            add("2$subgroup ${para.underGroup2Parsed.toPrettyHtmlString(para.typeWeek, 1)}")
-                    }
-                        .joinToString(" ")
-                }
-
                 holder.binding.itemTitle.text =
                     HtmlCompat.fromHtml(
-                        "${para.discipline} $weeks ${para.name} ${para.aud} ${para.groupName}",
+                        "${para.discipline} ${buildWeeksString(para)} ${para.name} ${para.audience} ${para.groupName}",
                         HtmlCompat.FROM_HTML_MODE_LEGACY
                     )
 
@@ -217,6 +228,7 @@ class TimetableAdapter(
                 item.para.extraData.run {
                     holder.binding.extraData.visibility = View.GONE
                     holder.binding.extraData1.visibility = View.GONE
+                    holder.binding.extraData2.visibility = View.GONE
 
                     if (this != null) {
                         if (prevName != null) {
@@ -225,8 +237,14 @@ class TimetableAdapter(
                         }
 
                         if (prevBuilding != null) {
-                            holder.binding.extraData1.text = "$prevBuilding ↝ ${item.para.aud.split("/").last()}"
+                            holder.binding.extraData1.text =
+                                "$prevBuilding ↝ ${item.para.audience.split("/").last()}"
                             holder.binding.extraData1.visibility = View.VISIBLE
+                        }
+
+                        if (routeTime != null) {
+                            holder.binding.extraData2.text = "↝ $routeTime m."
+                            holder.binding.extraData2.visibility = View.VISIBLE
                         }
                     }
                 }
