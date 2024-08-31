@@ -1,5 +1,7 @@
 package com.wavecat.mivlgu.client.models
 
+import kotlin.math.max
+
 class InvalidRangeException(message: String) : Exception(message)
 
 sealed interface WeekRange {
@@ -7,8 +9,11 @@ sealed interface WeekRange {
 
     data class InvalidRange(val unparsed: String) : WeekRange {
         override fun isLessonToday(weekType: WeekType, targetWeekNumber: Int): Boolean {
-            throw InvalidRangeException("Trying to operate with InvalidRange: '$unparsed'")
+            throwException()
         }
+
+        fun throwException(): Nothing =
+            throw InvalidRangeException("Trying to operate with InvalidRange: '$unparsed'")
     }
 
     data class Week(val weekNumber: Int) : WeekRange {
@@ -38,5 +43,19 @@ data class WeekEnumeration(val enumeration: List<WeekRange>) {
 
     companion object {
         val EMPTY = WeekEnumeration(emptyList())
+    }
+}
+
+fun WeekRange.getMaxWeekNumber(): Int = when (this) {
+    is WeekRange.InvalidRange -> throwException()
+    is WeekRange.Week -> weekNumber
+    is WeekRange.WeekParityRange -> max(start, end)
+}
+
+fun WeekEnumeration.getMaxWeekNumber(): Int {
+    return if (enumeration.isNotEmpty()) {
+        enumeration.maxOf { it.getMaxWeekNumber() }
+    } else {
+        0
     }
 }

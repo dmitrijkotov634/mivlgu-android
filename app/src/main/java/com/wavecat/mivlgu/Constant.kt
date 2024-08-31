@@ -1,9 +1,9 @@
 package com.wavecat.mivlgu
 
-import java.util.*
+import java.util.Calendar
 
 object Constant {
-    val facultiesIds = listOf(2, 10, 4, 9, 16)
+    val facultiesIds = listOf(2, 4, 9, 16)
 
     fun getSemester(calendar: Calendar): String =
         if (calendar.get(Calendar.MONTH) < Calendar.JULY) "2" else "1"

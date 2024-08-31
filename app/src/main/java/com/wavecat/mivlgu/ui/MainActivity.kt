@@ -2,10 +2,13 @@ package com.wavecat.mivlgu.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
@@ -32,6 +35,17 @@ class MainActivity : AppCompatActivity() {
     private val billingModel by viewModels<BillingViewModel>()
 
     private val repository by lazy { MainRepository(this) }
+
+    private val notificationsPermissionResult =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { result: Boolean? ->
+            if (!result!!) {
+                Snackbar.make(
+                    binding.getRoot(),
+                    R.string.notification_permission,
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DynamicColors.applyToActivityIfAvailable(this)
@@ -71,22 +85,30 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        model.loadingException.observe(this) {
-            when (it) {
-                null -> {}
+        model.loadingException.observe(this) { exception ->
+            when (exception) {
+                null -> {
+                    // No action needed when there's no exception.
+                }
 
-                is IOException -> Snackbar.make(
-                    binding.root,
-                    R.string.no_internet,
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                is IOException -> {
+                    Snackbar.make(
+                        binding.root,
+                        R.string.no_internet,
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
 
-                else -> binding.toolbar.subtitle = it.message
+                else -> {
+                    binding.toolbar.subtitle = exception.message
+                }
             }
         }
 
-        model.currentWeek.observe(this) {
-            binding.toolbar.subtitle = if (it == null) "" else getString(R.string.current_week, it)
+        model.currentWeek.observe(this) { week ->
+            binding.toolbar.subtitle = week?.let {
+                getString(R.string.current_week, it)
+            } ?: ""
         }
 
         if (intent.getBooleanExtra(ChatFragment.OPEN_AI_CHAT_ARG, false)) {
@@ -94,10 +116,36 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.ChatFragment, intent.extras, navOptions.build())
         }
 
+        // Legacy
         intent.getStringExtra(TimetableFragment.CACHE_KEY_ARG)?.let {
             model.restoreTimetableFromCache(it)
             navController.popBackStack()
+            navController.navigate(
+                R.id.TimetableFragment, bundleOf(
+                    TimetableFragment.TIMETABLE_NAME_ARG to intent.getStringExtra(TimetableFragment.TIMETABLE_NAME_ARG)
+                        .toString(),
+                    TimetableFragment.GROUP_ARG to null,
+                    TimetableFragment.TEACHER_ID_ARG to null,
+                ), navOptions.build()
+            )
+        }
+
+        if (intent.hasExtra(TimetableFragment.GROUP_ARG)) {
+            intent.getStringExtra(TimetableFragment.GROUP_ARG)?.let { groupArg ->
+                if (groupArg.isNotEmpty()) {
+                    model.selectGroup(groupArg)
+                }
+            }
+
+            intent.getStringExtra(TimetableFragment.TEACHER_ID_ARG)?.let { teacherIdArg ->
+                if (teacherIdArg.isNotEmpty()) {
+                    model.selectTeacher(teacherIdArg.toIntOrNull() ?: -1)
+                }
+            }
+
+            navController.popBackStack()
             navController.navigate(R.id.TimetableFragment, intent.extras, navOptions.build())
+
         }
     }
 
@@ -113,35 +161,23 @@ class MainActivity : AppCompatActivity() {
         removeDisabledMenuItems()
     }
 
-    /*
     fun enableNotifications() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && repository.useAnalyticsFunctions) {
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { result: Boolean? ->
-                if (!result!!) {
-                    Snackbar.make(
-                        binding.getRoot(),
-                        R.string.notification_permission,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationsPermissionResult.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-    }*/
+    }
 
     private fun removeDisabledMenuItems() {
-        binding.included.navView.visibility =
-            if (repository.disableAI && repository.disableIEP) View.GONE else View.VISIBLE
+        val disableBoth = repository.disableAI && repository.disableIEP
 
-        WindowCompat.setDecorFitsSystemWindows(
-            window,
-            repository.disableAI && repository.disableIEP
-        )
+        binding.included.navView.visibility = if (disableBoth) View.GONE else View.VISIBLE
 
-        if (repository.disableIEP)
-            binding.included.navView.menu.removeItem(R.id.iep)
+        WindowCompat.setDecorFitsSystemWindows(window, disableBoth)
 
-        if (repository.disableAI)
-            binding.included.navView.menu.removeItem(R.id.chat)
+        with(binding.included.navView.menu) {
+            if (repository.disableIEP) removeItem(R.id.iep)
+            if (repository.disableAI) removeItem(R.id.chat)
+        }
     }
 
     private fun getMenu(id: Int) = when (id) {

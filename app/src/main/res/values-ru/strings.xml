@@ -39,7 +39,7 @@
     <string name="coffee_description">Кофе для разработчика: эспрессо или американо. Благодарность и вдохновение в каждом глотке!</string>
 
     <string name="thanks_for_support">Спасибо за поддержку!</string>
-    <string name="please">Пожайлуста</string>
+    <string name="please">Пожалуйста</string>
     <string name="thanks_description">Ваш вклад помогает нам развивать и улучшать наше приложение. Мы очень ценим вашу помощь!</string>
 
     <string name="based_on_timetable">Расписание для %1$s</string>
@@ -58,19 +58,26 @@
     <string name="preload">Предзагрузка: %s</string>
 
     <string name="preload_timetable">Предзагрузить расписание</string>
-    <string name="disable_filter">Отключить фильтрацию по четности недель</string>
     <string name="disable_week_classes">Не подсказывать пары на текущей неделе</string>
-    <string name="show_current_week">Показывать переключатель текущей недели</string>
+    <string name="week_chooser">Выбор учебной недели</string>
     <string name="show_prev_group">Отображать информацию о предудыщих посетителях аудитории</string>
     <string name="show_teacher_path">Показывать длительные перемещения преподавателей между корпусами</string>
     <string name="show_route_time">Показать необходимое время для перехода к аудитории, в которой будет проводиться следующее занятие</string>
     <string name="data_analytics">Эксперименты по аналитике данных (секретно)</string>
     <string name="personalization">Персонализация</string>
+    <string name="hints">Советы</string>
     <string name="other">Другое</string>
     <string name="disable_iep">Отключить вкладку ИОП</string>
     <string name="disable_ai">Отключить вкладку ИИ</string>
     <string name="data_analytics_info">Чтобы использовать аналитические функции, необходимо предварительно загрузить всё расписание занятий, что займет примерно 5 минут. Для начала загрузки нажмите на кнопку ниже. Данные формируются только для текущей учебной недели. Загруженное расписание всех групп может перестать быть актуальным со временем</string>
     <string name="about">Сделано с ❤️ Дмитрий Котов 2024.</string>
+
+    <string name="school_week">Учебная неделя</string>
+    <string name="week">Неделя %d</string>
+
+    <string name="suggest_text">Вы сможете изменить эти параметры позже в настройках</string>
+    <string name="week_parity_filter">Фильтр по четности недель</string>
+    <string name="hide">Скрыть</string>
 
     <string-array name="days">
         <item>Понедельник</item>

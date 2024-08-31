@@ -15,7 +15,6 @@
     <string name="subgroup">s/g</string>
 
     <string name="fitr" translatable="false">ФИТР</string>
-    <string name="fem" translatable="false">ФЭМ</string>
     <string name="msf" translatable="false">МСФ</string>
     <string name="gf" translatable="false">ГФ</string>
     <string name="spo" translatable="false">СПО</string>
@@ -65,19 +64,26 @@
     <string name="preload">Preload: %s</string>
 
     <string name="preload_timetable">Preload timetable</string>
-    <string name="disable_filter">Disable filtering by parity of weeks</string>
     <string name="disable_week_classes">Don\'t suggest classes this week</string>
-    <string name="show_current_week">Show current week switch</string>
+    <string name="week_chooser">Choosing a school week</string>
     <string name="show_prev_group">Display information about previous audience visitors</string>
     <string name="show_teacher_path">Show teachers moving between buildings</string>
     <string name="show_route_time">Show the required time to move to the classroom where the next class will be held</string>
     <string name="data_analytics">Data Analytics</string>
     <string name="personalization">Personalization</string>
+    <string name="hints">Hints</string>
     <string name="other">Other</string>
     <string name="disable_iep">Disable IEP tab</string>
     <string name="disable_ai">Disable AI tab</string>
     <string name="data_analytics_info">To use the analytics features, you must first download your entire class schedule, which will take approximately 5 minutes. To start downloading, click on the button below. Analytical data is generated only for the current school week indicated on the website. The loaded schedule of all groups may no longer be relevant over time</string>
     <string name="about">Made with ❤️ Dmitry Kotov 2024.</string>
+
+    <string name="school_week">School week</string>
+    <string name="week">Week %d</string>
+
+    <string name="suggest_text">You can change these settings later in the settings</string>
+    <string name="week_parity_filter">Filter by week parity</string>
+    <string name="hide">Hide</string>
 
     <string-array name="time" translatable="false">
         <item>08.30 – 10.00</item>

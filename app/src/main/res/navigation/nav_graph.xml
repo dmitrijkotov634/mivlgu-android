@@ -26,11 +26,20 @@
 
         <argument
             android:name="timetable_name"
+            android:defaultValue=""
             app:argType="string" />
 
         <argument
-            android:name="cache_key"
-            app:argType="string" />
+            android:name="group"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="teacher_id"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
 
     <fragment

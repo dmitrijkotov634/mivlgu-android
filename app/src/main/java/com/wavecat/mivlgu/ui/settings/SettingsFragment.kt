@@ -43,27 +43,28 @@ class SettingsFragment : Fragment() {
             binding.preload.isEnabled = false
         }
 
-        model.disableFilter.observe(viewLifecycleOwner) {
-            binding.disableFilter.setOnCheckedChangeListener(null)
-            binding.disableFilter.isChecked = it
-            binding.disableFilter.setOnCheckedChangeListener { _, isChecked ->
-                model.changeDisableFilter(isChecked)
+        model.showWeekParityFilter.observe(viewLifecycleOwner) {
+            binding.showParityFilter.setOnCheckedChangeListener(null)
+            binding.showParityFilter.isChecked = it
+            binding.showParityFilter.setOnCheckedChangeListener { _, isChecked ->
+                model.changeShowParityFilter(isChecked)
             }
         }
 
         model.disableWeekClasses.observe(viewLifecycleOwner) {
             binding.disableWeekClasses.setOnCheckedChangeListener(null)
             binding.disableWeekClasses.isChecked = it
+            binding.showWeekChooser.isEnabled = !it
             binding.disableWeekClasses.setOnCheckedChangeListener { _, isChecked ->
                 model.changeDisableWeekClasses(isChecked)
             }
         }
 
-        model.showCurrentWeek.observe(viewLifecycleOwner) {
-            binding.showCurrentWeek.setOnCheckedChangeListener(null)
-            binding.showCurrentWeek.isChecked = it
-            binding.showCurrentWeek.setOnCheckedChangeListener { _, isChecked ->
-                model.changeShowCurrentWeek(isChecked)
+        model.showWeekChooser.observe(viewLifecycleOwner) {
+            binding.showWeekChooser.setOnCheckedChangeListener(null)
+            binding.showWeekChooser.isChecked = it
+            binding.showWeekChooser.setOnCheckedChangeListener { _, isChecked ->
+                model.changeShowWeekChooser(isChecked)
             }
         }
 
@@ -130,10 +131,12 @@ class SettingsFragment : Fragment() {
             var clicks = 0
 
             override fun onClick(v: View?) {
-                if (clicks++ < 7) return
+                if (clicks++ < 8) return
 
                 model.generateEasterEgg()
                 model.showExperiments()
+
+                (requireActivity() as MainActivity).enableNotifications()
 
                 startActivity(
                     Intent(
@@ -187,7 +190,7 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
-        const val TERMS_OF_USE = "https://telegra.ph/Polzovatelskoe-soglashenie-03-05-4"
+        const val TERMS_OF_USE = "https://telegra.ph/mivlgu-08-30"
         const val VK = "https://vk.com/bomb3r"
     }
 }

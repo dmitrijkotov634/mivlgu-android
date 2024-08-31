@@ -30,14 +30,6 @@
             android:textAlignment="center" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/fem"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fem"
-            android:textAlignment="center" />
-
-        <com.google.android.material.chip.Chip
             android:id="@+id/msf"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="match_parent"
@@ -97,5 +89,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/search_icon"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/groups"
+        app:layout_constraintStart_toStartOf="@+id/groups"
+        app:layout_constraintTop_toTopOf="@+id/groups"
+        app:srcCompat="@drawable/baseline_search_24"
+        app:tint="?colorControlNormal" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,11 +15,13 @@ import com.wavecat.mivlgu.client.HttpClient
 import com.wavecat.mivlgu.client.Parser
 import com.wavecat.mivlgu.client.ScheduleGetResult
 import com.wavecat.mivlgu.client.models.Status
+import com.wavecat.mivlgu.client.models.getMaxWeekNumber
 import com.wavecat.mivlgu.ui.settings.SettingsViewModel
 import com.wavecat.mivlgu.ui.timetable.TimetableItem
 import com.wavecat.mivlgu.workers.BuildModelWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.rustore.sdk.remoteconfig.RemoteConfigClient
 import java.util.Calendar
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,25 +46,45 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val httpClient = HttpClient()
 
     private val _currentGroupsList: MutableLiveData<Pair<List<String>, List<Int>?>> by lazy {
-        MutableLiveData<Pair<List<String>, List<Int>?>>().also {
-            if (repository.facultyIndex != TEACHER_INDEX)
-                selectFaculty(repository.facultyIndex)
-            else if (repository.teacherFio.isNotEmpty())
-                selectTeacher(repository.teacherFio)
+        MutableLiveData<Pair<List<String>, List<Int>?>>().apply {
+            when {
+                repository.facultyIndex != TEACHER_INDEX -> selectFaculty(repository.facultyIndex)
+                repository.teacherFio.isNotEmpty() -> findTeacher(repository.teacherFio)
+            }
         }
     }
 
     val currentGroupsList: LiveData<Pair<List<String>, List<Int>?>> = _currentGroupsList
 
+    private var showDatesAndHints = true
+    private var forceMonday = false
+
     init {
-        // Получаем текущую учебную неделю из кэша
         handleException(true) { _currentWeek.value = repository.cachedWeekNumber }
 
         viewModelScope.launch(Dispatchers.IO) {
             handleException {
-                // Получаем текущую учебную неделю по API
-                // Для тестирования выбрана 19 неделя
-                val weekNumber = if (repository.showExperiments) 6 else parser.getWeekNumber()
+                var weekNumber = parser.getWeekNumber()
+
+                runCatching {
+                    val remoteConfig = getRemoteConfig()
+
+                    val forceWeekNumber = remoteConfig.getInt("force_week_number")
+                    showDatesAndHints = !remoteConfig.getBoolean("hide_dates_and_hints")
+                    repository.allowAssistant = remoteConfig.getBoolean("allow_assistant")
+
+                    if (forceWeekNumber > 0)
+                        weekNumber = forceWeekNumber
+
+                    if (remoteConfig.getBoolean("drop_all_cache"))
+                        repository.dropAllCache()
+
+                    forceMonday = remoteConfig.getBoolean("force_monday")
+                }
+                    .onFailure {
+                        it.printStackTrace()
+                    }
+
                 _currentWeek.postValue(weekNumber)
                 repository.cachedWeekNumber = weekNumber
 
@@ -87,7 +109,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         e.printStackTrace()
     }
 
-    fun selectTeacher(fio: String?) {
+    private fun getRemoteConfig() = RemoteConfigClient.instance
+        .getRemoteConfig()
+        .await()
+
+    fun findTeacher(fio: String?) {
         _currentFacultyIndex.value = TEACHER_INDEX
 
         if (fio.isNullOrEmpty()) {
@@ -113,7 +139,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             val id = Constant.facultiesIds[index]
 
-            // Загружаем список групп из кэша
             handleException(true) {
                 _currentGroupsList.postValue(repository.retrieveFacultyCache(id) to null)
             }
@@ -121,7 +146,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val calendar = Calendar.getInstance()
 
             handleException {
-                // Получаем актуальный список групп и записываем в кэш
                 val data = parser.pickGroups(
                     id,
                     Constant.getSemester(calendar),
@@ -140,7 +164,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         var cache: ScheduleGetResult? = null
 
-        // Загружаем расписание с кэша
         handleException(true) {
             cache = repository.retrieveTimetableCache(group).apply {
                 _currentTimetableInfo.value = processTimetableInfo(this)
@@ -151,7 +174,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch(Dispatchers.IO) {
             handleException {
-                // Получаем актуальное расписание и записываем в кэш
                 httpClient.scheduleGetJson(
                     group,
                     Constant.getSemester(calendar),
@@ -170,7 +192,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isLoading.value = true
 
         handleException(true) {
-            // Загружаем расписание с кэша
             repository.retrieveTimetableCache(teacherId.toString()).let {
                 _currentTimetableInfo.value = processTimetableInfo(it)
             }
@@ -180,7 +201,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             handleException {
                 val calendar = Calendar.getInstance()
 
-                // Получаем актуальное расписание и записываем в кэш
                 httpClient.scheduleGetTeacherJson(
                     teacherId,
                     Constant.getSemester(calendar),
@@ -242,11 +262,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val showRouteTime = repository.showRouteTime
         val useAnalyticsFunctions = repository.useAnalyticsFunctions
 
-        var disableFilter = repository.disableFilter
+        var showWeekParityFilter = repository.showWeekParityFilter
         var disableWeekClasses = repository.disableWeekClasses
-        var showCurrentWeek = repository.showCurrentWeek
+        var showCurrentWeek = repository.showWeekChooser
 
         var hasInvalidRanges = false
+
+        var maxWeekNumber = 1
 
         data.disciplines.forEach { (dayKey, classes) ->
             val dayIndex = dayKey.toInt() - 1
@@ -256,7 +278,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             list.add(TimetableItem.DayHeader(dayIndex))
 
-            if (isToday) {
+            if (isToday && !forceMonday) {
                 todayIndex = dayIndex
                 todayItemIndex = list.size
             }
@@ -271,21 +293,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                                 if (useAnalyticsFunctions) para.extraData = cachedPara.extraData
                             }
 
-                        para.extraData?.run {
-                            if (!showTeacherPath) prevBuilding = null
-                            if (!showRouteTime) routeTime = null
+                        para.extraData?.let { extra ->
+                            extra.prevBuilding = extra.takeIf { showTeacherPath }?.prevBuilding
+                            extra.routeTime = extra.takeIf { showRouteTime }?.routeTime
                             if (!showPrevGroup) {
-                                prevName = null
-                                prevGroupName = null
+                                extra.prevName = null
+                                extra.prevGroupName = null
                             }
                         }
 
-                        list.add(TimetableItem.ParaItem(para))
+                        runCatching {
+                            val maxWeek = maxOf(
+                                para.parsedWeekNumber.getMaxWeekNumber(),
+                                para.parsedSubGroup1.getMaxWeekNumber(),
+                                para.parsedSubGroup2.getMaxWeekNumber()
+                            )
 
-                        runCatching { para.isLessonToday(currentWeek) }.onFailure {
+                            println(maxWeek)
+
+                            if (maxWeek > maxWeekNumber)
+                                maxWeekNumber = maxWeek
+                        }.onFailure { e ->
                             hasInvalidRanges = true
-                            it.printStackTrace()
+                            e.printStackTrace()
                         }
+
+                        list.add(TimetableItem.ParaItem(para))
                     }
                 }
             }
@@ -298,9 +331,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         if (hasInvalidRanges) {
             list.add(todayItemIndex, TimetableItem.Warning.HAS_INVALID_RANGES)
-            disableFilter = true
+            showWeekParityFilter = false
             disableWeekClasses = true
         }
+
+        if (disableWeekClasses)
+            showCurrentWeek = false
 
         val weekValue = _currentWeek.value?.plus(if (inverted) 1 else 0)
 
@@ -317,11 +353,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             isEven = isEven,
             todayIndex = todayIndex,
             currentWeek = weekValue,
-            disableFilter = disableFilter,
+            showWeekParityFilter = showWeekParityFilter,
             disableWeekClasses = disableWeekClasses,
             startDate = startDate,
             hasInvalidRanges = hasInvalidRanges,
-            showCurrentWeek = showCurrentWeek
+            showCurrentWeek = showCurrentWeek,
+            showDatesAndCurrentKlassHints = showDatesAndHints,
+            maxWeekNumber = maxWeekNumber
         )
     }
 

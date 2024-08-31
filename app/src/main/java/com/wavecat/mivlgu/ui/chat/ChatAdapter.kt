@@ -5,10 +5,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.RecyclerView
 import com.wavecat.mivlgu.R
 import com.wavecat.mivlgu.databinding.ChatMessageBinding
-import com.wavecat.mivlgu.ui.chat.GrammarLocatorDef
+import com.wavecat.mivlgu.dp
 import com.wavecat.mivlgu.ui.chat.models.Message
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
@@ -69,6 +70,8 @@ class ChatAdapter(
 
     @SuppressLint("RtlHardcoded")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.itemView.updatePadding(top = (if (position == 0) 42 else 0).dp)
+
         holder.binding.apply {
             val message = messages[position]
 

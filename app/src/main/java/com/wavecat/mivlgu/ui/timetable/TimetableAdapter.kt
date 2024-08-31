@@ -24,8 +24,9 @@ import java.util.Calendar
 class TimetableAdapter(
     private val context: Context,
     var items: List<TimetableItem>,
-    private val currentWeek: Int?,
-    var dates: List<String>
+    var currentWeek: Int?,
+    var dates: List<String>,
+    private val showCurrentKlassHints: Boolean = true
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var hideObviousWeekRange = false
@@ -92,7 +93,7 @@ class TimetableAdapter(
         enumeration.joinToString(",") { range ->
             when (range) {
                 is WeekRange.WeekParityRange -> buildString {
-                    if (currentWeek != null && range.isLessonToday(weekType, currentWeek)) {
+                    if (currentWeek != null && range.isLessonToday(weekType, currentWeek!!)) {
                         append(FORMAT_START)
                         if (groupNumber != null) append("<font color=\"${groupColors[groupNumber]}\">")
                         append(range.start)
@@ -135,7 +136,11 @@ class TimetableAdapter(
                 else -> -1
             }
 
-            "<font color=\"${groupColors[groupId]}\">${groupId + 1}$subgroup</font>"
+            "<font color=\"${
+                groupColors.getOrElse(
+                    groupId
+                ) { "#FF0000" }
+            }\">${groupId + 1}$subgroup</font>"
         } else {
             buildList {
                 if (!para.subGroup1.isNullOrEmpty())
@@ -164,16 +169,20 @@ class TimetableAdapter(
                 holder.binding.klassTime.text = time.getOrNull(item.index)
                 holder.binding.klassTitle.text = klass.getOrNull(item.index)
 
-                val current = Calendar.getInstance().apply {
-                    val temp = Calendar.getInstance()
-                    timeInMillis = 0
-                    set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY))
-                    set(Calendar.MINUTE, temp.get(Calendar.MINUTE))
-                }
+                if (showCurrentKlassHints) {
+                    val current = Calendar.getInstance().apply {
+                        val temp = Calendar.getInstance()
+                        timeInMillis = 0
+                        set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, temp.get(Calendar.MINUTE))
+                    }
 
-                Constant.timeRanges.getOrNull(item.index)?.also { timeRange ->
-                    holder.binding.klassStatus.visibility =
-                        if (item.isToday && timeRange.check(current)) View.VISIBLE else View.GONE
+                    Constant.timeRanges.getOrNull(item.index)?.also { timeRange ->
+                        holder.binding.klassStatus.visibility =
+                            if (item.isToday && timeRange.check(current)) View.VISIBLE else View.GONE
+                    }
+                } else {
+                    holder.binding.klassStatus.visibility = View.GONE
                 }
             }
 

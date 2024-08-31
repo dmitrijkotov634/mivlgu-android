@@ -87,7 +87,7 @@ class GroupFragment : Fragment() {
 
                     setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                         override fun onQueryTextSubmit(query: String?): Boolean {
-                            model.selectTeacher(query.toString())
+                            model.findTeacher(query.toString())
                             return true
                         }
 
@@ -125,7 +125,7 @@ class GroupFragment : Fragment() {
             repository.facultyIndex = index
 
             if (index == MainViewModel.TEACHER_INDEX)
-                model.selectTeacher(repository.teacherFio)
+                model.findTeacher(repository.teacherFio)
             else
                 model.selectFaculty(index)
         }
@@ -134,21 +134,25 @@ class GroupFragment : Fragment() {
             binding.groups.layoutManager =
                 GridLayoutManager(context, if (group.second == null) 2 else 1)
 
+            binding.searchIcon.visibility =
+                if (group.first.isEmpty() && group.second != null) View.VISIBLE else View.GONE
+
             binding.groups.adapter = GroupAdapter(group.first) {
                 requireActivity().invalidateMenu()
 
-                val (cacheKey, name) = if (group.second == null) {
+                val name = group.second?.let { teacherList ->
+                    model.selectTeacher(teacherList[it])
+                    group.first[it]
+                } ?: run {
                     model.selectGroup(group.first[it])
-                    group.first[it] to group.first[it]
-                } else {
-                    model.selectTeacher(group.second!![it])
-                    group.second!![it].toString() to group.first[it]
+                    group.first[it]
                 }
 
                 findNavController().navigate(
                     GroupFragmentDirections.actionGroupFragmentToTimetableFragment(
-                        name,
-                        cacheKey
+                        timetableName = name,
+                        group = group.second?.let { null } ?: group.first[it],
+                        teacherId = group.second?.get(it)?.toString()
                     )
                 )
 
@@ -158,7 +162,7 @@ class GroupFragment : Fragment() {
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
 
                 val shortcutInfo =
-                    ShortcutInfoCompat.Builder(requireContext(), cacheKey)
+                    ShortcutInfoCompat.Builder(requireContext(), name)
                         .setIntent(
                             Intent(
                                 requireContext(),
@@ -166,7 +170,13 @@ class GroupFragment : Fragment() {
                             )
                                 .setAction(Intent.ACTION_VIEW)
                                 .putExtra(TimetableFragment.TIMETABLE_NAME_ARG, name)
-                                .putExtra(TimetableFragment.CACHE_KEY_ARG, cacheKey)
+                                .putExtra(
+                                    TimetableFragment.TEACHER_ID_ARG,
+                                    group.second?.get(it)?.toString()
+                                )
+                                .putExtra(
+                                    TimetableFragment.GROUP_ARG,
+                                    group.second?.let { null } ?: group.first[it])
                         )
                         .setShortLabel(name)
                         .setIcon(

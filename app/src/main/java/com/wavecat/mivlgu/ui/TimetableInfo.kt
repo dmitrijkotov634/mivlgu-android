@@ -12,11 +12,13 @@ sealed interface TimetableInfo {
         val isEven: Boolean,
         val todayIndex: Int,
         val currentWeek: Int?,
-        val disableFilter: Boolean,
+        val showWeekParityFilter: Boolean,
         val disableWeekClasses: Boolean,
         val startDate: Calendar?,
         val hasInvalidRanges: Boolean,
-        val showCurrentWeek: Boolean
+        val showCurrentWeek: Boolean,
+        val showDatesAndCurrentKlassHints: Boolean,
+        val maxWeekNumber: Int
     ) : Parcelable, TimetableInfo
 
     data class Failure(

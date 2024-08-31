@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.ModelType
+import com.wavecat.mivlgu.MainRepository
 import com.wavecat.mivlgu.ui.TimetableInfo
 import com.wavecat.mivlgu.ui.chat.models.CompletionsInput
 import com.wavecat.mivlgu.ui.chat.models.CompletionsResult
@@ -35,6 +36,7 @@ import kotlin.math.min
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val messages: MutableList<Message> = mutableListOf()
+    private val repository = MainRepository(application)
 
     private val registry = Encodings.newLazyEncodingRegistry()
     val encoding by lazy { registry.getEncodingForModel(ModelType.GPT_3_5_TURBO)!! }
@@ -61,6 +63,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val timetable = Timetable(application)
     private var plugins: List<Plugin> = listOf(timetable)
+
+    init {
+        runCatching {
+            messages.addAll(repository.chatHistory)
+        }.onFailure {
+            it.printStackTrace()
+        }
+    }
 
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
@@ -140,6 +150,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 messages.add(message)
                 plugins.forEach { it.onPostProcessMessage(message) }
                 _event.postValue(Event(messages, true))
+                saveHistory()
             }
 
             delay(3500)
@@ -150,6 +161,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun saveInputText(text: String) {
         _messageInputText.value = text
+    }
+
+    private fun saveHistory() {
+        if (timetableInfo.value == null)
+            repository.chatHistory = messages
     }
 
     fun setupTimetableInfo(name: String?, timetableInfo: TimetableInfo.Success?) {
@@ -163,10 +179,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch(Dispatchers.IO) {
             plugins.forEach { it.onClearContext() }
+            saveHistory()
         }
-
-        _timetableInfo.value = null
-        timetable.timetableInfo = null
     }
 
     private fun trimMessages(

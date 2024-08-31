@@ -27,6 +27,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.wavecat.mivlgu.R
@@ -189,6 +191,8 @@ class ChatFragment : Fragment(), RecognitionListener {
         }
 
         model.isLoading.observe(viewLifecycleOwner) {
+            makeTransition()
+
             binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
 
             binding.clear.isEnabled = !it
@@ -212,6 +216,7 @@ class ChatFragment : Fragment(), RecognitionListener {
         }
 
         binding.timetableInfo.setOnClickListener {
+            makeTransition()
             model.setupTimetableInfo(null, null)
         }
 
@@ -238,6 +243,13 @@ class ChatFragment : Fragment(), RecognitionListener {
                 )
             }
         }
+    }
+
+    private fun makeTransition() {
+        val transition = AutoTransition()
+        transition.excludeChildren(binding.messages, true)
+        transition.excludeTarget(binding.messages, true)
+        TransitionManager.beginDelayedTransition(binding.root, transition)
     }
 
     override fun onDestroyView() {

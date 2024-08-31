@@ -27,11 +27,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _showRouteTime = MutableLiveData(repository.showRouteTime)
     val showRouteTime: LiveData<Boolean> = _showRouteTime
 
-    private val _disableFilter = MutableLiveData(repository.disableFilter)
-    val disableFilter: LiveData<Boolean> = _disableFilter
+    private val _showWeekParityFilter = MutableLiveData(repository.showWeekParityFilter)
+    val showWeekParityFilter: LiveData<Boolean> = _showWeekParityFilter
 
-    private val _showCurrentWeek = MutableLiveData(repository.showCurrentWeek)
-    val showCurrentWeek: LiveData<Boolean> = _showCurrentWeek
+    private val _showWeekChooser = MutableLiveData(repository.showWeekChooser)
+    val showWeekChooser: LiveData<Boolean> = _showWeekChooser
 
     private val _disableWeekClasses = MutableLiveData(repository.disableWeekClasses)
     val disableWeekClasses: LiveData<Boolean> = _disableWeekClasses
@@ -65,14 +65,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         repository.showRouteTime = state
     }
 
-    fun changeDisableFilter(state: Boolean) {
-        _disableFilter.value = state
-        repository.disableFilter = state
+    fun changeShowParityFilter(state: Boolean) {
+        _showWeekParityFilter.value = state
+        repository.showWeekParityFilter = state
     }
 
-    fun changeShowCurrentWeek(state: Boolean) {
-        _showCurrentWeek.value = state
-        repository.showCurrentWeek = state
+    fun changeShowWeekChooser(state: Boolean) {
+        _showWeekChooser.value = state
+        repository.showWeekChooser = state
     }
 
     fun changeDisableWeekClasses(state: Boolean) {
